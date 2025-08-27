@@ -15,3 +15,11 @@ content-type: application/json
 {
 }
 ###
+
+# /now_time
+GET {{host}}/now_time
+content-type: application/now_time
+
+{
+}
+###
