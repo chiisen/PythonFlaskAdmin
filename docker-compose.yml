@@ -1,4 +1,4 @@
-version: "2"
+version: "2" # 因 Ubuntu 16.04.2 系統上的 docker-compose 1.8.0 僅支援 version 2，version 3 會報錯
 
 services:
   web:
