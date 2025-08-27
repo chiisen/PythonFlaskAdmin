@@ -1,0 +1,12 @@
+version: "2"
+
+services:
+  web:
+    build: .
+    ports:
+      - "3005:5000" # 映射主機的3005端口到容器的5000端口，外部訪問使用3005
+    volumes:
+      - ./src:/app/src
+    environment:
+      - FLASK_ENV=development
+    command: flask run --host=0.0.0.0
