@@ -29,20 +29,20 @@ static/ 和 templates/ 資料夾（如有前端）
 分別放靜態檔案和 HTML 模板。
 
 ## 基本結構範例：
-PythonFlaskAdmin/
-├── Dockerfile
-├── requirements.txt
-├── .dockerignore
-├── src/
-│   ├── app.py
-│   └── views.py
-├── requirements.txt
-├── Dockerfile
-├── .dockerignore
-├── README.md
-├── config.py
-├── static/
-└── templates/
+PythonFlaskAdmin/  
+├── Dockerfile  
+├── requirements.txt  
+├── .dockerignore  
+├── src/  
+│   ├── app.py  
+│   └── views.py  
+├── requirements.txt  
+├── Dockerfile  
+├── .dockerignore  
+├── README.md  
+├── config.py  
+├── static/  
+└── templates/  
 
 ## requirements.txt 產生方式：
 ```bash
