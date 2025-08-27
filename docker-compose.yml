@@ -9,4 +9,6 @@ services:
       - ./src:/app/src
     environment:
       - FLASK_ENV=development
-    command: flask run --host=0.0.0.0
+      - PYTHONPATH=/app/src        # 新增這行，讓 Python 能找到 src
+    working_dir: /app/src          # 新增這行，讓 flask run 在 src 目錄下執行
+    command: flask run --host=0.0.0.0 --app app  # 指定 app.py 為入口
