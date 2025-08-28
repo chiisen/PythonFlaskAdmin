@@ -1,5 +1,5 @@
 from flask import Flask
-
+from flask_cors import CORS
 
 import os
 import logging
@@ -29,7 +29,7 @@ from service.settings import bp_settings
 
 
 app = Flask(__name__)
-
+CORS(app)
 
 # 註冊 blueprint
 app.register_blueprint(bp_views)
