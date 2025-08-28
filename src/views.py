@@ -1,4 +1,4 @@
-from flask import Blueprint
+from flask import Blueprint, jsonify
 from utils import mysql
 # from 主目錄.子目錄 import 檔名(py檔)
 
@@ -36,3 +36,24 @@ def get_now_time():
     else:
         return result
 
+@bp_views.route("/posts", methods=["GET"])
+def get_posts():
+    """取得所有文章
+
+    Returns:
+        _type_: { "is_success": 是否執行成功 True / False, "result": 文章列表 }
+    """
+
+    response = {
+        "is_success": True,
+        "result": [
+                    { "id": 1, "title": 'Hello', "body": 'World' },
+                    { "id": 2, "title": 'Foo', "body": 'Bar' }
+                ]
+    }
+    is_success = response["is_success"]
+    result = response["result"]
+    if(is_success == True):
+        return jsonify(result)
+    else:
+        return result

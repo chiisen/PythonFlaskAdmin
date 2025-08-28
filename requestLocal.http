@@ -42,3 +42,12 @@ appName: "ReactAdmin"
     "data_type": "weight_training"
 }
 ###
+
+# posts
+GET {{host}}/posts
+content-type: application/json
+appName: "ReactAdmin"
+
+{
+}
+###
