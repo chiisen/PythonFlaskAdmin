@@ -79,27 +79,25 @@ def get_setting_version(data_type):
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             query = ""
             if data_type:
-                query = "SELECT data_type, version, updated_at FROM setting_versions WHERE data_type = %s ORDER BY updated_at DESC;"
+                query = "SELECT data_type, version, updated_at, id FROM setting_versions WHERE data_type = %s ORDER BY updated_at DESC;"
                 cursor.execute(query, (data_type,))
                 logger.info(query, data_type)
             else:
-                query = "SELECT data_type, version, updated_at FROM setting_versions ORDER BY updated_at DESC;"
+                query = "SELECT data_type, version, updated_at, id FROM setting_versions ORDER BY updated_at DESC;"
                 cursor.execute(query)
                 logger.info(query)            
 
             rows = cursor.fetchall()
             if rows:
                 array = []
-                idx = 1
                 for row in rows:
                     array.append({
                         "data_type": row["data_type"],
                         "version": row["version"],
                         "updated_at": str(row["updated_at"]),
                         "updated_at_timestamp": timestamp.datetime_str_to_timestamp(str(row["updated_at"])),
-                        "id": idx, # 前端 React Admin 需要 id 欄位來顯示序號
+                        "id": row["id"], # 前端 React Admin 需要 id 欄位來顯示序號
                     })
-                    idx += 1
                 return {"is_success": True, "result": array}
             else:
                 return {"is_success": False, "result": "無法獲取設定版本"}
