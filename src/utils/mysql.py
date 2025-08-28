@@ -97,7 +97,7 @@ def get_setting_version(data_type):
                         "version": row["version"],
                         "updated_at": str(row["updated_at"]),
                         "updated_at_timestamp": timestamp.datetime_str_to_timestamp(str(row["updated_at"])),
-                        "id": idx,
+                        "id": idx, # 前端 React Admin 需要 id 欄位來顯示序號
                     })
                     idx += 1
                 return {"is_success": True, "result": array}
