@@ -90,13 +90,16 @@ def get_setting_version(data_type):
             rows = cursor.fetchall()
             if rows:
                 array = []
+                idx = 1
                 for row in rows:
                     array.append({
                         "data_type": row["data_type"],
                         "version": row["version"],
                         "updated_at": str(row["updated_at"]),
-                        "updated_at_timestamp": timestamp.datetime_str_to_timestamp(str(row["updated_at"]))
+                        "updated_at_timestamp": timestamp.datetime_str_to_timestamp(str(row["updated_at"])),
+                        "id": idx,
                     })
+                    idx += 1
                 return {"is_success": True, "result": array}
             else:
                 return {"is_success": False, "result": "無法獲取設定版本"}

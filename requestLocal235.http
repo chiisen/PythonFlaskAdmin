@@ -44,7 +44,16 @@ appName: "ReactAdmin"
 ###
 
 # posts
-GET {{host}}/posts
+POST {{host}}/posts/list
+content-type: application/json
+appName: "ReactAdmin"
+
+{
+}
+###
+
+# 取得設定版本
+POST {{host}}/settingVersion/list
 content-type: application/json
 appName: "ReactAdmin"
 

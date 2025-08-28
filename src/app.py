@@ -25,15 +25,20 @@ logger.info("Flask app logger initialized")
 # 匯入 blueprint [Start]
 from views import bp_views  
 from service.settings import bp_settings
+from posts.posts import bp_posts
+from settingVersion.settingVersion import bp_settingVersion
 # 匯入 blueprint [End]
 
 
 app = Flask(__name__)
 CORS(app)
 
+
 # 註冊 blueprint
 app.register_blueprint(bp_views)
 app.register_blueprint(bp_settings)
+app.register_blueprint(bp_posts)
+app.register_blueprint(bp_settingVersion)
 
 
 @app.route("/", methods=["GET", "POST"])
