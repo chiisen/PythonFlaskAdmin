@@ -33,11 +33,32 @@ appName: "ReactAdmin"
 }
 ###
 
-# 取得設定版本
+# 取得設定版本 - list
 POST {{host}}/settingVersion/list
 content-type: application/json
 appName: "ReactAdmin"
 
 {
+}
+###
+
+# 取得設定版本 - get
+POST {{host}}/settingVersion/get
+content-type: application/json
+appName: "ReactAdmin"
+
+{
+    "id": 1
+}
+###
+
+# 取得設定版本 - create
+POST {{host}}/settingVersion/create
+content-type: application/json
+appName: "ReactAdmin"
+
+{
+    "data_type": "test",
+    "version": "1.0.1"
 }
 ###

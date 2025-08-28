@@ -66,7 +66,7 @@ def get_now_time():
             except:
                 pass
 
-def get_setting_version(data_type):
+def setting_version_list(data_type):
     """取得設定版本
 
     Returns:
@@ -109,3 +109,91 @@ def get_setting_version(data_type):
                 conn.close()
             except:
                 pass
+
+def setting_version_get(id):
+    """取得設定版本
+
+    Returns:
+        _type_: { "is_success": 是否執行成功 True / False, "result": 設定版本 }
+    """
+
+    conn = None
+    try:
+        conn = get_mysql_connection()
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            query = "SELECT data_type, version, updated_at, id FROM setting_versions WHERE id = %s;"
+            cursor.execute(query, (id,))
+            logger.info(query, id)
+
+            row = cursor.fetchone()
+            if row:
+                return {
+                    "is_success": True,
+                    "result": {
+                        "data_type": row["data_type"],
+                        "version": row["version"],
+                        "updated_at": str(row["updated_at"]),
+                        "updated_at_timestamp": timestamp.datetime_str_to_timestamp(str(row["updated_at"])),
+                        "id": row["id"],
+                    }
+                }
+            else:
+                return {"is_success": False, "result": "無法獲取設定版本"}
+    except Exception as e:
+        return {"is_success": False, "result": f"連線失敗: {e}"}
+    finally:
+        if conn:
+            try:
+                conn.close()
+            except:
+                pass
+
+def setting_version_create(data_type, version):
+    """建立設定版本
+
+    Returns:
+        _type_: { "is_success": 是否執行成功 True / False, "result": 設定版本 }
+    """
+
+    if not data_type:
+        raise ValueError("data_type 參數必填")
+    if not version:
+        version = "1.0.0"
+    conn = None
+    try:
+        conn = get_mysql_connection()
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            # 新增一筆資料
+            insert_query = "INSERT INTO setting_versions (data_type, version, updated_at) VALUES (%s, %s, NOW());"
+            cursor.execute(insert_query, (data_type, version))
+            conn.commit()
+            logger.info(insert_query, data_type, version)
+
+            # 取得剛新增的資料（用自動產生的 id）
+            last_id = cursor.lastrowid
+            select_query = "SELECT data_type, version, updated_at, id FROM setting_versions WHERE id = %s;"
+            cursor.execute(select_query, (last_id,))
+            logger.info(select_query, last_id)
+            row = cursor.fetchone()
+            if row:
+                return {
+                    "is_success": True,
+                    "result": {
+                        "data_type": row["data_type"],
+                        "version": row["version"],
+                        "updated_at": str(row["updated_at"]),
+                        "updated_at_timestamp": timestamp.datetime_str_to_timestamp(str(row["updated_at"])),
+                        "id": row["id"],
+                    }
+                }
+            else:
+                return {"is_success": False, "result": "無法獲取新增後的設定版本"}
+    except Exception as e:
+        return {"is_success": False, "result": f"連線失敗: {e}"}
+    finally:
+        if conn:
+            try:
+                conn.close()
+            except:
+                pass
+

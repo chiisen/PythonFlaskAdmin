@@ -22,7 +22,7 @@ def setting_version_list():
 
     data_type = request.json.get("data_type") if request.json else None  # 取得 data_type 參數
 
-    response = mysql.get_setting_version(data_type)
+    response = mysql.setting_version_list(data_type)
     is_success = response["is_success"]
     result = response["result"]
     if(is_success == True):
@@ -47,9 +47,9 @@ def setting_version_get():
 
     app_name = request.headers.get('appName')
 
-    data_type = request.json.get("data_type") if request.json else None  # 取得 data_type 參數
+    id = request.json.get("id") if request.json else None  # 取得 id 參數
 
-    response = mysql.get_setting_version(data_type)
+    response = mysql.setting_version_get(id)
     is_success = response["is_success"]
     result = response["result"]
     if(is_success == True):
@@ -75,8 +75,9 @@ def setting_version_create():
     app_name = request.headers.get('appName')
 
     data_type = request.json.get("data_type") if request.json else None  # 取得 data_type 參數
+    version = request.json.get("version") if request.json else None  # 取得 version 參數
 
-    response = mysql.get_setting_version(data_type)
+    response = mysql.setting_version_create(data_type, version)
     is_success = response["is_success"]
     result = response["result"]
     if(is_success == True):
@@ -103,7 +104,7 @@ def setting_version_update():
 
     data_type = request.json.get("data_type") if request.json else None  # 取得 data_type 參數
 
-    response = mysql.get_setting_version(data_type)
+    response = mysql.setting_version_list(data_type)
     is_success = response["is_success"]
     result = response["result"]
     if(is_success == True):
@@ -130,7 +131,7 @@ def setting_version_delete():
 
     data_type = request.json.get("data_type") if request.json else None  # 取得 data_type 參數
 
-    response = mysql.get_setting_version(data_type)
+    response = mysql.setting_version_list(data_type)
     is_success = response["is_success"]
     result = response["result"]
     if(is_success == True):
