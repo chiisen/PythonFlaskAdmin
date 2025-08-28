@@ -77,15 +77,9 @@ def setting_version_list(data_type):
     try:
         conn = get_mysql_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
-            query = ""
-            if data_type:
-                query = "SELECT data_type, version, updated_at, id FROM setting_versions WHERE data_type = %s ORDER BY updated_at DESC;"
-                cursor.execute(query, (data_type,))
-                logger.info(query, data_type)
-            else:
-                query = "SELECT data_type, version, updated_at, id FROM setting_versions ORDER BY updated_at DESC;"
-                cursor.execute(query)
-                logger.info(query)            
+            query = "SELECT data_type, version, updated_at, id FROM setting_versions ORDER BY updated_at DESC;"
+            cursor.execute(query)
+            logger.info(query)            
 
             rows = cursor.fetchall()
             if rows:
@@ -117,6 +111,8 @@ def setting_version_get(id):
         _type_: { "is_success": 是否執行成功 True / False, "result": 設定版本 }
     """
 
+    if not id:
+        raise ValueError("id 參數必填")
     conn = None
     try:
         conn = get_mysql_connection()
@@ -197,3 +193,108 @@ def setting_version_create(data_type, version):
             except:
                 pass
 
+def setting_version_update(id, version):
+    """更新設定版本
+
+    Returns:
+        _type_: { "is_success": 是否執行成功 True / False, "result": 設定版本 }
+    """
+
+    if not id:
+        raise ValueError("id 參數必填")
+    conn = None
+    try:
+        conn = get_mysql_connection()
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            if version:
+                update_query = "UPDATE setting_versions SET version = %s, updated_at = NOW() WHERE id = %s;"
+                cursor.execute(update_query, (version, id))
+                logger.info(update_query, version, id)
+            else:
+                update_query = "UPDATE setting_versions SET updated_at = NOW() WHERE id = %s;"
+                cursor.execute(update_query, (id,))
+                logger.info(update_query, id)
+            conn.commit()
+
+            # 取得更新後的資料
+            select_query = "SELECT data_type, version, updated_at, id FROM setting_versions WHERE id = %s;"
+            cursor.execute(select_query, (id,))
+            logger.info(select_query, id)
+            row = cursor.fetchone()
+            if row:
+                return {
+                    "is_success": True,
+                    "result": {
+                        "data_type": row["data_type"],
+                        "version": row["version"],
+                        "updated_at": str(row["updated_at"]),
+                        "updated_at_timestamp": timestamp.datetime_str_to_timestamp(str(row["updated_at"])),
+                        "id": row["id"],
+                    }
+                }
+            else:
+                return {"is_success": False, "result": "無法獲取更新後的設定版本"}
+    except Exception as e:
+        return {"is_success": False, "result": f"連線失敗: {e}"}
+    finally:
+        if conn:
+            try:
+                conn.close()
+            except:
+                pass
+
+def setting_version_delete(id):
+    """刪除設定版本
+
+    Returns:
+        _type_: { "is_success": 是否執行成功 True / False, "result": 設定版本 }
+    """
+
+    if not id:
+        raise ValueError("id 參數必填")
+    conn = None
+    try:
+        conn = get_mysql_connection()
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            delete_query = "DELETE FROM setting_versions WHERE id = %s;"
+            cursor.execute(delete_query, (id,))
+            conn.commit()
+            logger.info(delete_query, id)
+            return {"is_success": True, "result": {"id": id}}
+    except Exception as e:
+        return {"is_success": False, "result": f"連線失敗: {e}"}
+    finally:
+        if conn:
+            try:
+                conn.close()
+            except:
+                pass
+
+def setting_version_deleteMany(id):
+    """刪除設定版本
+
+    Returns:
+        _type_: { "is_success": 是否執行成功 True / False, "result": 設定版本 }
+    """
+
+    if not id or not isinstance(id, (list, tuple)):
+        raise ValueError("id 參數必須為 list 或 tuple，且不可為空")
+    conn = None
+    try:
+        conn = get_mysql_connection()
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            # 產生 SQL IN 條件
+            format_strings = ','.join(['%s'] * len(id))
+            delete_query = f"DELETE FROM setting_versions WHERE id IN ({format_strings});"
+            cursor.execute(delete_query, tuple(id))
+            conn.commit()
+            logger.info(delete_query, id)
+            return {"is_success": True, "result": {"ids": id}}
+    except Exception as e:
+        return {"is_success": False, "result": f"連線失敗: {e}"}
+    finally:
+        if conn:
+            try:
+                conn.close()
+            except:
+                pass

@@ -58,7 +58,38 @@ content-type: application/json
 appName: "ReactAdmin"
 
 {
-    "data_type": "test",
+    "data_type": "test1",
     "version": "1.0.1"
+}
+###
+
+# 取得設定版本 - update
+POST {{host}}/settingVersion/update
+content-type: application/json
+appName: "ReactAdmin"
+
+{
+    "id": 12,
+    "version": "1.0.2"
+}
+###
+
+# 取得設定版本 - delete
+POST {{host}}/settingVersion/delete
+content-type: application/json
+appName: "ReactAdmin"
+
+{
+    "id": 12
+}
+###
+
+# 取得設定版本 - deleteMany
+POST {{host}}/settingVersion/deleteMany
+content-type: application/json
+appName: "ReactAdmin"
+
+{
+    "id": [12]
 }
 ###

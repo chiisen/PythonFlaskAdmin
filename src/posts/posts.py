@@ -36,19 +36,19 @@ def posts_list():
         return result
     
 @bp_posts.route("/posts/get", methods=["POST"])
-def posts_get():
+def posts_get(id):
     """取得所有文章
 
     Returns:
         _type_: { "is_success": 是否執行成功 True / False, "result": 文章列表 }
     """
 
+    # SELECT 指定的文章 id
     response = {
         "is_success": True,
         "result": {
             "data": [
-                { "id": 1, "title": 'Hello', "body": 'World' },
-                { "id": 2, "title": 'Foo', "body": 'Bar' }
+                { "id": 1, "title": 'Hello', "body": 'World' }
             ]
         }
     }
@@ -60,19 +60,24 @@ def posts_get():
         return result
     
 @bp_posts.route("/posts/create", methods=["POST"])
-def posts_create():
+def posts_create(title, body):
     """取得所有文章
 
     Returns:
         _type_: { "is_success": 是否執行成功 True / False, "result": 文章列表 }
     """
 
+    # 檢查 title, body
+    if not title or not body:
+        return {"is_success": False, "result": "缺少必要參數"}
+
+    # INSERT 新建一筆資料
+    # SELECT 剛剛建立那筆資料
     response = {
         "is_success": True,
         "result": {
             "data": [
-                { "id": 1, "title": 'Hello', "body": 'World' },
-                { "id": 2, "title": 'Foo', "body": 'Bar' }
+                { "id": 1, "title": 'Hello', "body": 'World' }
             ]
         }
     }

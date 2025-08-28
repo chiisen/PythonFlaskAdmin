@@ -83,13 +83,13 @@ def setting_version_create():
     if(is_success == True):
         json_format_result = {"data": result}
         json_result = jsonify(json_format_result)
-        logger.info(f"App: {app_name}, 取得設定版本成功: {result}")
+        logger.info(f"App: {app_name}, 建立設定版本成功: {result}")
         return json_result
     else:
         json_format_result = {"data": []}
         error_result = jsonify({ "error": result })
         json_result = jsonify(json_format_result)
-        logger.error(f"App: {app_name}, 取得設定版本失敗: {error_result}")
+        logger.error(f"App: {app_name}, 建立設定版本失敗: {error_result}")
         return json_result
     
 @bp_settingVersion.route("/settingVersion/update", methods=["POST"])
@@ -102,21 +102,22 @@ def setting_version_update():
 
     app_name = request.headers.get('appName')
 
-    data_type = request.json.get("data_type") if request.json else None  # 取得 data_type 參數
+    id = request.json.get("id") if request.json else None  # 取得 id 參數
+    version = request.json.get("version") if request.json else None  # 取得 version 參數
 
-    response = mysql.setting_version_list(data_type)
+    response = mysql.setting_version_update(id, version)
     is_success = response["is_success"]
     result = response["result"]
     if(is_success == True):
         json_format_result = {"data": result}
         json_result = jsonify(json_format_result)
-        logger.info(f"App: {app_name}, 取得設定版本成功: {result}")
+        logger.info(f"App: {app_name}, 更新設定版本成功: {result}")
         return json_result
     else:
         json_format_result = {"data": []}
         error_result = jsonify({ "error": result })
         json_result = jsonify(json_format_result)
-        logger.error(f"App: {app_name}, 取得設定版本失敗: {error_result}")
+        logger.error(f"App: {app_name}, 更新設定版本失敗: {error_result}")
         return json_result
 
 @bp_settingVersion.route("/settingVersion/delete", methods=["POST"])
@@ -129,19 +130,46 @@ def setting_version_delete():
 
     app_name = request.headers.get('appName')
 
-    data_type = request.json.get("data_type") if request.json else None  # 取得 data_type 參數
+    id = request.json.get("id") if request.json else None  # 取得 id 參數
 
-    response = mysql.setting_version_list(data_type)
+    response = mysql.setting_version_delete(id)
     is_success = response["is_success"]
     result = response["result"]
     if(is_success == True):
         json_format_result = {"data": result}
         json_result = jsonify(json_format_result)
-        logger.info(f"App: {app_name}, 取得設定版本成功: {result}")
+        logger.info(f"App: {app_name}, 刪除設定版本成功: {result}")
         return json_result
     else:
         json_format_result = {"data": []}
         error_result = jsonify({ "error": result })
         json_result = jsonify(json_format_result)
-        logger.error(f"App: {app_name}, 取得設定版本失敗: {error_result}")
+        logger.error(f"App: {app_name}, 刪除設定版本失敗: {error_result}")
+        return json_result
+    
+@bp_settingVersion.route("/settingVersion/deleteMany", methods=["POST"])
+def setting_version_deleteMany():
+    """刪除設定版本
+
+    Returns:
+        _type_: 回傳版本資訊
+    """
+
+    app_name = request.headers.get('appName')
+
+    id = request.json.get("id") if request.json else None  # 取得 id 參數
+
+    response = mysql.setting_version_deleteMany(id)
+    is_success = response["is_success"]
+    result = response["result"]
+    if(is_success == True):
+        json_format_result = {"data": result}
+        json_result = jsonify(json_format_result)
+        logger.info(f"App: {app_name}, 刪除設定版本成功: {result}")
+        return json_result
+    else:
+        json_format_result = {"data": []}
+        error_result = jsonify({ "error": result })
+        json_result = jsonify(json_format_result)
+        logger.error(f"App: {app_name}, 刪除設定版本失敗: {error_result}")
         return json_result
