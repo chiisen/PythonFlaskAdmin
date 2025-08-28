@@ -27,6 +27,7 @@ content-type: application/json
 # 取得設定版本 - 全部
 POST {{host}}/getSettingVersion
 content-type: application/json
+appName: "ReactAdmin"
 
 {
 }
@@ -35,6 +36,7 @@ content-type: application/json
 # 取得設定版本 - 單一
 POST {{host}}/getSettingVersion
 content-type: application/json
+appName: "ReactAdmin"
 
 {
     "data_type": "weight_training"

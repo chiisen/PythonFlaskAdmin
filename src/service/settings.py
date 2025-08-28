@@ -18,12 +18,19 @@ def get_setting_version():
         _type_: 回傳版本資訊
     """
 
+    app_name = request.headers.get('appName')
+
     data_type = request.json.get("data_type") if request.json else None  # 取得 data_type 參數
 
     response = mysql.get_setting_version(data_type)
     is_success = response["is_success"]
     result = response["result"]
     if(is_success == True):
-        return jsonify(result)
+        json_result = jsonify(result)
+        logger.info(f"App: {app_name}, 取得設定版本成功: {result}")
+        return json_result
     else:
-        return result
+        reeor_result = { "error": result }
+        json_result = jsonify(reeor_result)
+        logger.error(f"App: {app_name}, 取得設定版本失敗: {reeor_result}")
+        return json_result
