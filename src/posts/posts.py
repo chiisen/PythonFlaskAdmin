@@ -32,6 +32,8 @@ def posts_list():
         _type_: { "is_success": 是否執行成功 True / False, "result": 文章列表 }
     """
 
+    app_name = request.headers.get('appName')
+
     response = POSTS_CACHE.copy()
 
     is_success = response["is_success"]
@@ -45,16 +47,17 @@ def posts_list():
                 "body": row["body"]
             })
         json_format_result = {"data": array, "total": len(array)}
+        logger.info(f"App: {app_name}, 取得文章列表成功: {result}")
         return jsonify(json_format_result)
     else:
         return result
     
 @bp_posts.route("/posts/get", methods=["POST"])
 def posts_get():
-    """取得所有文章
+    """取得單筆文章
 
     Returns:
-        _type_: { "is_success": 是否執行成功 True / False, "result": 文章列表 }
+        _type_: { "is_success": 是否執行成功 True / False, "result": 文章資料 }
     """
 
     # 從 request 取得 id
@@ -78,10 +81,10 @@ def posts_get():
     
 @bp_posts.route("/posts/create", methods=["POST"])
 def posts_create():
-    """取得所有文章
+    """建立文章
 
     Returns:
-        _type_: { "is_success": 是否執行成功 True / False, "result": 文章列表 }
+        _type_: { "is_success": 是否執行成功 True / False, "result": 文章資料 }
     """
 
     # 從 request 取得 id, title, body
@@ -115,10 +118,10 @@ def posts_create():
     
 @bp_posts.route("/posts/update", methods=["POST"])
 def posts_update():
-    """取得所有文章
+    """更新文章
 
     Returns:
-        _type_: { "is_success": 是否執行成功 True / False, "result": 文章列表 }
+        _type_: { "is_success": 是否執行成功 True / False, "result": 文章資料 }
     """
 
     # 從 request 取得 id, title, body
@@ -159,7 +162,7 @@ def posts_delete():
     """刪除文章
 
     Returns:
-        _type_: { "is_success": 是否執行成功 True / False, "result": 文章列表 }
+        _type_: { "is_success": 是否執行成功 True / False, "result": 文章資料 }
     """
 
     # 從 request 取得 id
