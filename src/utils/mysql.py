@@ -270,26 +270,33 @@ def setting_version_delete(id):
             except:
                 pass
 
-def setting_version_deleteMany(id):
+def setting_version_deleteMany(ids):
     """刪除設定版本
 
     Returns:
         _type_: { "is_success": 是否執行成功 True / False, "result": 設定版本 }
     """
 
-    if not id or not isinstance(id, (list, tuple)):
-        raise ValueError("id 參數必須為 list 或 tuple，且不可為空")
+    # 支援傳入逗號分隔字串或單一值
+    if isinstance(ids, str):
+        ids = [i.strip() for i in ids.split(',') if i.strip()]
+    elif isinstance(ids, int):
+        ids = [ids]
+    elif not isinstance(ids, (list, tuple)):
+        raise ValueError("ids 參數型態錯誤")
+    if not ids:
+        raise ValueError("ids 參數不可為空")
     conn = None
     try:
         conn = get_mysql_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             # 產生 SQL IN 條件
-            format_strings = ','.join(['%s'] * len(id))
+            format_strings = ','.join(['%s'] * len(ids))
             delete_query = f"DELETE FROM setting_versions WHERE id IN ({format_strings});"
-            cursor.execute(delete_query, tuple(id))
+            cursor.execute(delete_query, tuple(ids))
             conn.commit()
-            logger.info(delete_query, id)
-            return {"is_success": True, "result": {"ids": id}}
+            logger.info(delete_query, ids)
+            return {"is_success": True, "result": ids}
     except Exception as e:
         return {"is_success": False, "result": f"連線失敗: {e}"}
     finally:

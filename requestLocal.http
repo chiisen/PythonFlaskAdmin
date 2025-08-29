@@ -90,6 +90,6 @@ content-type: application/json
 appName: "ReactAdmin"
 
 {
-    "id": [12]
+    "ids": [12]
 }
 ###

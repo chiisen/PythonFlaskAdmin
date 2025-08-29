@@ -157,9 +157,9 @@ def setting_version_deleteMany():
 
     app_name = request.headers.get('appName')
 
-    id = request.json.get("id") if request.json else None  # 取得 id 參數
+    ids = request.json.get("ids") if request.json else None  # 取得 ids 參數
 
-    response = mysql.setting_version_deleteMany(id)
+    response = mysql.setting_version_deleteMany(ids)
     is_success = response["is_success"]
     result = response["result"]
     if(is_success == True):
