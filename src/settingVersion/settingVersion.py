@@ -20,9 +20,9 @@ def setting_version_list():
 
     app_name = request.headers.get('appName')
 
-    data_type = request.json.get("data_type") if request.json else None  # 取得 data_type 參數
+    sort = request.json.get("sort") if request.json else None  # 取得 sort 參數
 
-    response = mysql.setting_version_list(data_type)
+    response = mysql.setting_version_list(sort)
     is_success = response["is_success"]
     result = response["result"]
     if(is_success == True):

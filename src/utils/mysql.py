@@ -66,7 +66,7 @@ def get_now_time():
             except:
                 pass
 
-def setting_version_list(data_type):
+def setting_version_list(sort):
     """取得設定版本
 
     Returns:
@@ -77,7 +77,12 @@ def setting_version_list(data_type):
     try:
         conn = get_mysql_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
-            query = "SELECT data_type, version, updated_at, id FROM setting_versions ORDER BY updated_at DESC;"
+            # 如果 sort 有值，則根據 sort 參數決定排序方式
+            if not sort:
+                query = "SELECT data_type, version, updated_at, id FROM setting_versions ORDER BY updated_at DESC;"
+            else:
+                query = f"SELECT data_type, version, updated_at, id FROM setting_versions ORDER BY {sort['field']} {sort['order']};"
+
             cursor.execute(query)
             logger.info(query)            
 
