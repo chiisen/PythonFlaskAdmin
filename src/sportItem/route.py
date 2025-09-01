@@ -8,7 +8,7 @@ logger = logging.getLogger("flask.app")
 
 routeName = 'sportItem'
 
-bp_sportItem = Blueprint('sportItem', __name__)
+bp_sportItem = Blueprint(routeName, __name__)
 
 
 @bp_sportItem.route(f"/{routeName}/list", methods=["POST"])
