@@ -8,11 +8,11 @@ from collections.abc import Sequence
 logger = logging.getLogger("flask.app")
 
 
-tableName = 'setting_versions'
+tableName = 'category_option'
 
-selectField = f"id, data_type, version, updated_at, created_at"
-insertField = f"data_type, version, updated_at, created_at"
-insertValues = f"%s, %s, NOW(), NOW()"
+selectField = f"id, group_id, name_key, description, sort_order, updated_at, created_at"
+insertField = f"group_id, name_key, description, sort_order, updated_at, created_at"
+insertValues = f"%s, %s, %s, %s, NOW(), NOW()"
 
 def format_result(row):
     """格式化 result
@@ -25,8 +25,10 @@ def format_result(row):
         return None
     return {
         "id": row["id"], # 前端 React Admin 需要 id 欄位來顯示序號
-        "data_type": row["data_type"],
-        "version": row["version"],
+        "group_id": row["group_id"],
+        "name_key": row["name_key"],
+        "description": row["description"],
+        "sort_order": row["sort_order"],
         "updated_at": str(row["updated_at"]),
         "updated_at_timestamp": timestamp.datetime_str_to_timestamp(str(row["updated_at"])),
         "created_at": str(row["created_at"]),
@@ -105,7 +107,7 @@ def get(id):
                     "result": format_result(row)
                 }
             else:
-                return {"is_success": False, "result": "無法獲取設定"}
+                return {"is_success": False, "result": "無法獲取設定版本"}
     except Exception as e:
         return {"is_success": False, "result": f"連線失敗: {e}"}
     finally:
@@ -115,26 +117,29 @@ def get(id):
             except:
                 pass
 
-def create(data_type, version):
+def create(group_id, name_key, description, sort_order):
     """建立設定版本
 
     Returns:
         _type_: { "is_success": 是否執行成功 True / False, "result": 設定版本 }
     """
 
-    if not data_type:
-        raise ValueError("data_type 參數必填")
-    if not version:
-        version = "1.0.0"
+    if not group_id:
+        raise ValueError("group_id 參數必填")
+    if not name_key:
+        raise ValueError("name_key 參數必填")
+    # description 說明可以不用填
+    if not sort_order:
+        raise ValueError("sort_order 參數必填")
     conn = None
     try:
         conn = mysql.get_mysql_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             # 新增一筆資料
             insert_query = f"INSERT INTO {tableName} ({insertField}) VALUES ({insertValues});"
-            cursor.execute(insert_query, (data_type, version))
+            cursor.execute(insert_query, (group_id, name_key, description, sort_order))
             conn.commit()
-            logger.info(insert_query, data_type, version)
+            logger.info(insert_query, group_id, name_key, description, sort_order)
 
             # 取得剛新增的資料（用自動產生的 id）
             last_id = cursor.lastrowid
@@ -158,7 +163,7 @@ def create(data_type, version):
             except:
                 pass
 
-def update(id, version, updated_at):
+def update(id, name_key, description, sort_order, updated_at):
     """更新設定版本
 
     Returns:
@@ -171,9 +176,9 @@ def update(id, version, updated_at):
     try:
         conn = mysql.get_mysql_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
-            update_query = f"UPDATE {tableName} SET version = %s, updated_at = %s WHERE id = %s;"
-            cursor.execute(update_query, (version, updated_at, id))
-            logger.info(update_query, version, updated_at, id)
+            update_query = f"UPDATE {tableName} SET name_key = %s, description = %s, sort_order = %s, updated_at = %s WHERE id = %s;"
+            cursor.execute(update_query, (name_key, description, sort_order, updated_at, id))
+            logger.info(update_query, name_key, description, sort_order, updated_at, id)
             conn.commit()
 
             # 取得更新後的資料

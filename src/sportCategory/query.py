@@ -11,6 +11,27 @@ logger = logging.getLogger("flask.app")
 tableName = 'sport_category'
 
 selectField = f"item_id, option_id, updated_at, created_at"
+insertField = f"item_id, option_id, updated_at, created_at"
+insertValues = f"%s, %s, NOW(), NOW()"
+
+def format_result(row):
+    """格式化 result
+
+    Returns:
+        _type_: { "result": 設定資料 }
+    """
+
+    if not row:
+        return None
+    return {
+        "id": f"{row['item_id']}-{row['option_id']}", # 前端 React Admin 需要 id 欄位來顯示序號
+        "item_id": row["item_id"],
+        "option_id": row["option_id"],
+        "updated_at": str(row["updated_at"]),
+        "updated_at_timestamp": timestamp.datetime_str_to_timestamp(str(row["updated_at"])),
+        "created_at": str(row["created_at"]),
+        "created_at_timestamp": timestamp.datetime_str_to_timestamp(str(row["created_at"])),
+    }
 
 def list(sort, pagination):
     """取得設定版本
@@ -49,17 +70,7 @@ def list(sort, pagination):
             total = count_row["total"] if count_row else 0
 
             if rows:
-                array = []
-                for row in rows:
-                    array.append({
-                        "id": f"{row['item_id']}-{row['option_id']}", # 前端 React Admin 需要 id 欄位來顯示序號
-                        "item_id": row["item_id"],
-                        "option_id": row["option_id"],
-                        "updated_at": str(row["updated_at"]),
-                        "updated_at_timestamp": timestamp.datetime_str_to_timestamp(str(row["updated_at"])),
-                        "created_at": str(row["created_at"]),
-                        "created_at_timestamp": timestamp.datetime_str_to_timestamp(str(row["created_at"])),
-                    })
+                array = [format_result(row) for row in rows]
                 return {"is_success": True, "result": {"data": array, "total": total}}
             else:
                 return {"is_success": False, "result": "無法獲取設定"}
@@ -95,15 +106,7 @@ def get(item_id, option_id):
             if row:
                 return {
                     "is_success": True,
-                    "result": {
-                        "id": f"{row['item_id']}-{row['option_id']}", # 前端 React Admin 需要 id 欄位來顯示序號
-                        "item_id": row["item_id"],
-                        "option_id": row["option_id"],
-                        "updated_at": str(row["updated_at"]),
-                        "updated_at_timestamp": timestamp.datetime_str_to_timestamp(str(row["updated_at"])),
-                        "created_at": str(row["created_at"]),
-                        "created_at_timestamp": timestamp.datetime_str_to_timestamp(str(row["created_at"])),
-                    }
+                    "result": format_result(row)
                 }
             else:
                 return {"is_success": False, "result": "無法獲取設定版本"}
@@ -132,7 +135,7 @@ def create(item_id, option_id):
         conn = mysql.get_mysql_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             # 新增一筆資料
-            insert_query = f"INSERT INTO {tableName} (item_id, option_id, updated_at, created_at) VALUES (%s, %s, NOW(), NOW());"
+            insert_query = f"INSERT INTO {tableName} ({insertField}) VALUES ({insertValues});"
             cursor.execute(insert_query, (item_id, option_id))
             conn.commit()
             logger.info(insert_query, item_id, option_id)
@@ -144,15 +147,7 @@ def create(item_id, option_id):
             if row:
                 return {
                     "is_success": True,
-                    "result": {
-                        "id": f"{row['item_id']}-{row['option_id']}", # 前端 React Admin 需要 id 欄位來顯示序號
-                        "item_id": row["item_id"],
-                        "option_id": row["option_id"],
-                        "updated_at": str(row["updated_at"]),
-                        "updated_at_timestamp": timestamp.datetime_str_to_timestamp(str(row["updated_at"])),
-                        "created_at": str(row["created_at"]),
-                        "created_at_timestamp": timestamp.datetime_str_to_timestamp(str(row["created_at"])),
-                    }
+                    "result": format_result(row)
                 }
             else:
                 return {"is_success": False, "result": "無法獲取新增後的設定版本"}

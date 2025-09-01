@@ -11,6 +11,29 @@ logger = logging.getLogger("flask.app")
 tableName = 'sport_item'
 
 selectField = f"id, name_key, description, link_type, link_sub_type, updated_at, created_at"
+insertField = f"name_key, description, link_type, link_sub_type, updated_at, created_at"
+insertValues = f"%s, %s, %s, %s, NOW(), NOW()"
+
+def format_result(row):
+    """格式化 result
+
+    Returns:
+        _type_: { "result": 設定資料 }
+    """
+
+    if not row:
+        return None
+    return {
+        "id": row["id"], # 前端 React Admin 需要 id 欄位來顯示序號
+        "name_key": row["name_key"],
+        "description": row["description"],
+        "link_type": row["link_type"],
+        "link_sub_type": row["link_sub_type"],
+        "updated_at": str(row["updated_at"]),
+        "updated_at_timestamp": timestamp.datetime_str_to_timestamp(str(row["updated_at"])),
+        "created_at": str(row["created_at"]),
+        "created_at_timestamp": timestamp.datetime_str_to_timestamp(str(row["created_at"])),
+    }
 
 def list(sort, pagination):
     """取得設定版本
@@ -47,19 +70,7 @@ def list(sort, pagination):
             total = count_row["total"] if count_row else 0
 
             if rows:
-                array = []
-                for row in rows:
-                    array.append({
-                        "id": row["id"], # 前端 React Admin 需要 id 欄位來顯示序號
-                        "name_key": row["name_key"],
-                        "description": row["description"],
-                        "link_type": row["link_type"],
-                        "link_sub_type": row["link_sub_type"],
-                        "updated_at": str(row["updated_at"]),
-                        "updated_at_timestamp": timestamp.datetime_str_to_timestamp(str(row["updated_at"])),
-                        "created_at": str(row["created_at"]),
-                        "created_at_timestamp": timestamp.datetime_str_to_timestamp(str(row["created_at"])),
-                    })
+                array = [format_result(row) for row in rows]
                 return {"is_success": True, "result": {"data": array, "total": total}}
             else:
                 return {"is_success": False, "result": "無法獲取設定版本"}
@@ -93,17 +104,7 @@ def get(id):
             if row:
                 return {
                     "is_success": True,
-                    "result": {
-                        "id": row["id"],
-                        "name_key": row["name_key"],
-                        "description": row["description"],
-                        "link_type": row["link_type"],
-                        "link_sub_type": row["link_sub_type"],
-                        "updated_at": str(row["updated_at"]),
-                        "updated_at_timestamp": timestamp.datetime_str_to_timestamp(str(row["updated_at"])),
-                        "created_at": str(row["created_at"]),
-                        "created_at_timestamp": timestamp.datetime_str_to_timestamp(str(row["created_at"])),
-                    }
+                    "result": format_result(row)
                 }
             else:
                 return {"is_success": False, "result": "無法獲取設定版本"}
@@ -135,7 +136,7 @@ def create(name_key, description, link_type, link_sub_type):
         conn = mysql.get_mysql_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             # 新增一筆資料
-            insert_query = f"INSERT INTO {tableName} (name_key, description, link_type, link_sub_type, updated_at, created_at) VALUES (%s, %s, %s, %s, NOW(), NOW());"
+            insert_query = f"INSERT INTO {tableName} ({insertField}) VALUES ({insertValues});"
             cursor.execute(insert_query, (name_key, description, link_type, link_sub_type))
             conn.commit()
             logger.info(insert_query, name_key, description, link_type, link_sub_type)
@@ -149,17 +150,7 @@ def create(name_key, description, link_type, link_sub_type):
             if row:
                 return {
                     "is_success": True,
-                    "result": {
-                        "id": row["id"],
-                        "name_key": row["name_key"],
-                        "description": row["description"],
-                        "link_type": row["link_type"],
-                        "link_sub_type": row["link_sub_type"],
-                        "updated_at": str(row["updated_at"]),
-                        "updated_at_timestamp": timestamp.datetime_str_to_timestamp(str(row["updated_at"])),
-                        "created_at": str(row["created_at"]),
-                        "created_at_timestamp": timestamp.datetime_str_to_timestamp(str(row["created_at"])),
-                    }
+                    "result": format_result(row)
                 }
             else:
                 return {"is_success": False, "result": "無法獲取新增後的設定版本"}
@@ -198,17 +189,7 @@ def update(id, name_key, description, link_type, link_sub_type, updated_at):
             if row:
                 return {
                     "is_success": True,
-                    "result": {
-                        "id": row["id"],
-                        "name_key": row["name_key"],
-                        "description": row["description"],
-                        "link_type": row["link_type"],
-                        "link_sub_type": row["link_sub_type"],
-                        "updated_at": str(row["updated_at"]),
-                        "updated_at_timestamp": timestamp.datetime_str_to_timestamp(str(row["updated_at"])),
-                        "created_at": str(row["created_at"]),
-                        "created_at_timestamp": timestamp.datetime_str_to_timestamp(str(row["created_at"])),
-                    }
+                    "result": format_result(row)
                 }
             else:
                 return {"is_success": False, "result": "無法獲取更新後的設定版本"}
