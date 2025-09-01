@@ -106,7 +106,7 @@ def get(id):
     try:
         conn = mysql.get_mysql_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
-            query = f"SELECT {selectField} FROM {tableName} WHERE id = %s;"
+            query = f"SELECT {selectField} FROM {tableName} WHERE `key` = %s;"
             cursor.execute(query, (id,))
             logger.info(query, id)
 
@@ -127,33 +127,33 @@ def get(id):
             except:
                 pass
 
-def create(name_key, description, sort_order):
+def create(key, lang, text):
     """建立設定版本
 
     Returns:
         _type_: { "is_success": 是否執行成功 True / False, "result": 設定版本 }
     """
 
-    if not name_key:
-        raise ValueError("name_key 參數必填")
+    if not key:
+        raise ValueError("key 參數必填")
     # description 說明可以不用填
-    if not sort_order:
-        raise ValueError("sort_order 參數必填")
+    if not lang:
+        raise ValueError("lang 參數必填")
+    if not text:
+        raise ValueError("text 參數必填")
     conn = None
     try:
         conn = mysql.get_mysql_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             # 新增一筆資料
             insert_query = f"INSERT INTO {tableName} ({insertField}) VALUES ({insertValues});"
-            cursor.execute(insert_query, (name_key, description, sort_order))
+            cursor.execute(insert_query, (key, lang, text))
             conn.commit()
-            logger.info(insert_query, name_key, description, sort_order)
+            logger.info(insert_query, key, lang, text)
 
-            # 取得剛新增的資料（用自動產生的 id）
-            last_id = cursor.lastrowid
-            select_query = f"SELECT {selectField} FROM {tableName} WHERE id = %s;"
-            cursor.execute(select_query, (last_id,))
-            logger.info(select_query, last_id)
+            select_query = f"SELECT {selectField} FROM {tableName} WHERE `key` = %s;"
+            cursor.execute(select_query, (key,))
+            logger.info(select_query, key)
             row = cursor.fetchone()
             if row:
                 return {
@@ -190,7 +190,7 @@ def update(id, name_key, description, sort_order, updated_at):
             conn.commit()
 
             # 取得更新後的資料
-            select_query = f"SELECT {selectField} FROM {tableName} WHERE id = %s;"
+            select_query = f"SELECT {selectField} FROM {tableName} WHERE `key` = %s;"
             cursor.execute(select_query, (id,))
             logger.info(select_query, id)
             row = cursor.fetchone()
@@ -223,7 +223,7 @@ def delete(id):
     try:
         conn = mysql.get_mysql_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
-            delete_query = f"DELETE FROM {tableName} WHERE id = %s;"
+            delete_query = f"DELETE FROM {tableName} WHERE `key` = %s;"
             cursor.execute(delete_query, (id,))
             conn.commit()
             logger.info(delete_query, id)
@@ -259,7 +259,7 @@ def deleteMany(ids):
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             # 產生 SQL IN 條件
             format_strings = ','.join(['%s'] * len(ids))
-            delete_query = f"DELETE FROM {tableName} WHERE id IN ({format_strings});"
+            delete_query = f"DELETE FROM {tableName} WHERE `key` IN ({format_strings});"
             cursor.execute(delete_query, tuple(ids))
             conn.commit()
             logger.info(delete_query, ids)

@@ -76,11 +76,11 @@ def create():
 
     app_name = request.headers.get('appName')
 
-    name_key = request.json.get("name_key") if request.json else None  # 取得 name_key 參數
-    description = request.json.get("description") if request.json else None  # 取得 description 參數
-    sort_order = request.json.get("sort_order") if request.json else None  # 取得 sort_order 參數
+    key = request.json.get("key") if request.json else None  # 取得 key 參數
+    lang = request.json.get("lang") if request.json else None  # 取得 lang 參數
+    text = request.json.get("text") if request.json else None  # 取得 text 參數
 
-    response = query.create(name_key, description, sort_order)
+    response = query.create(key, lang, text)
     is_success = response["is_success"]
     result = response["result"]
     if(is_success == True):
