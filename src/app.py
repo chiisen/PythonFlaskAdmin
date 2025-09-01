@@ -27,6 +27,7 @@ from views import bp_views
 from posts.posts import bp_posts
 from settingVersion.route import bp_settingVersion
 from sportItem.route import bp_sportItem
+from sportCategory.route import bp_sportCategory
 # 匯入 blueprint [End]
 
 
@@ -34,11 +35,13 @@ app = Flask(__name__)
 CORS(app)
 
 
-# 註冊 blueprint
+# 註冊 blueprint [Start]
 app.register_blueprint(bp_views)
 app.register_blueprint(bp_posts)
 app.register_blueprint(bp_settingVersion)
 app.register_blueprint(bp_sportItem)
+app.register_blueprint(bp_sportCategory)
+# 註冊 blueprint [End]
 
 
 @app.route("/", methods=["GET", "POST"])
