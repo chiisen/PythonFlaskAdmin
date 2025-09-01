@@ -14,6 +14,16 @@ selectField = f"id, name_key, description, sort_order, updated_at, created_at"
 insertField = f"name_key, description, sort_order, updated_at, created_at"
 insertValues = f"%s, %s, %s, NOW(), NOW()"
 
+
+def get_sort_field(sort_field):
+    """處理排序欄位，
+    id 不做轉換
+    """
+    
+    if sort_field == "id":
+        return "id"
+    return sort_field
+
 def format_result(row):
     """格式化 result
 
@@ -55,7 +65,8 @@ def list(sort, pagination):
                 query = f"SELECT {selectField} FROM {tableName} ORDER BY updated_at DESC LIMIT %s OFFSET %s;"
                 query_args = (per_page, offset)
             else:
-                query = f"SELECT {selectField} FROM {tableName} ORDER BY {sort['field']} {sort['order']} LIMIT %s OFFSET %s;"
+                sort_field = get_sort_field(sort['field'])
+                query = f"SELECT {selectField} FROM {tableName} ORDER BY {sort_field} {sort['order']} LIMIT %s OFFSET %s;"
                 query_args = (per_page, offset)
 
             cursor.execute(query, query_args)
@@ -72,7 +83,7 @@ def list(sort, pagination):
                 array = [format_result(row) for row in rows]
                 return {"is_success": True, "result": {"data": array, "total": total}}
             else:
-                return {"is_success": False, "result": "無法獲取設定版本"}
+                return {"is_success": False, "result": "無法獲取設定"}
     except Exception as e:
         return {"is_success": False, "result": f"連線失敗: {e}"}
     finally:
@@ -106,7 +117,7 @@ def get(id):
                     "result": format_result(row)
                 }
             else:
-                return {"is_success": False, "result": "無法獲取設定版本"}
+                return {"is_success": False, "result": "無法獲取設定"}
     except Exception as e:
         return {"is_success": False, "result": f"連線失敗: {e}"}
     finally:

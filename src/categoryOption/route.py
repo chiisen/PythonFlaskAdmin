@@ -8,7 +8,7 @@ logger = logging.getLogger("flask.app")
 
 routeName = 'categoryOption'
 
-bp_categoryOption = Blueprint('categoryOption', __name__)
+bp_categoryOption = Blueprint(routeName, __name__)
 
 
 @bp_categoryOption.route(f"/{routeName}/list", methods=["POST"])

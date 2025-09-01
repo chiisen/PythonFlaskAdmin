@@ -8,19 +8,20 @@ from collections.abc import Sequence
 logger = logging.getLogger("flask.app")
 
 
-tableName = 'sport_item'
+tableName = 'i18n_text'
 
-selectField = f"id, name_key, description, link_type, link_sub_type, updated_at, created_at"
-insertField = f"name_key, description, link_type, link_sub_type, updated_at, created_at"
-insertValues = f"%s, %s, %s, %s, NOW(), NOW()"
+# key 是 MySQL 保留字，要加上反引號
+selectField = f"`key`, lang, text, updated_at, created_at"
+insertField = f"`key`, lang, text, updated_at, created_at"
+insertValues = f"%s, %s, %s, NOW(), NOW()"
 
 def get_sort_field(sort_field):
     """處理排序欄位，
-    id 不做轉換
+    將 id 轉為 key，因為 id 為 key 更名，因為前端只讀 id
     """
     
     if sort_field == "id":
-        return "id"
+        return "`key`" # key 是 MySQL 保留字，要加上反引號
     return sort_field
 
 def format_result(row):
@@ -33,11 +34,10 @@ def format_result(row):
     if not row:
         return None
     return {
-        "id": row["id"], # 前端 React Admin 需要 id 欄位來顯示序號
-        "name_key": row["name_key"],
-        "description": row["description"],
-        "link_type": row["link_type"],
-        "link_sub_type": row["link_sub_type"],
+        "id": row["key"], # 前端 React Admin 需要 id 欄位來顯示序號
+        "key": row["key"],
+        "lang": row["lang"],
+        "text": row["text"],
         "updated_at": str(row["updated_at"]),
         "updated_at_timestamp": timestamp.datetime_str_to_timestamp(str(row["updated_at"])),
         "created_at": str(row["created_at"]),
@@ -127,7 +127,7 @@ def get(id):
             except:
                 pass
 
-def create(name_key, description, link_type, link_sub_type):
+def create(name_key, description, sort_order):
     """建立設定版本
 
     Returns:
@@ -137,19 +137,17 @@ def create(name_key, description, link_type, link_sub_type):
     if not name_key:
         raise ValueError("name_key 參數必填")
     # description 說明可以不用填
-    if not link_type:
-        raise ValueError("link_type 參數必填")
-    if not link_sub_type:
-        raise ValueError("link_sub_type 參數必填")
+    if not sort_order:
+        raise ValueError("sort_order 參數必填")
     conn = None
     try:
         conn = mysql.get_mysql_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             # 新增一筆資料
             insert_query = f"INSERT INTO {tableName} ({insertField}) VALUES ({insertValues});"
-            cursor.execute(insert_query, (name_key, description, link_type, link_sub_type))
+            cursor.execute(insert_query, (name_key, description, sort_order))
             conn.commit()
-            logger.info(insert_query, name_key, description, link_type, link_sub_type)
+            logger.info(insert_query, name_key, description, sort_order)
 
             # 取得剛新增的資料（用自動產生的 id）
             last_id = cursor.lastrowid
@@ -173,7 +171,7 @@ def create(name_key, description, link_type, link_sub_type):
             except:
                 pass
 
-def update(id, name_key, description, link_type, link_sub_type, updated_at):
+def update(id, name_key, description, sort_order, updated_at):
     """更新設定版本
 
     Returns:
@@ -186,9 +184,9 @@ def update(id, name_key, description, link_type, link_sub_type, updated_at):
     try:
         conn = mysql.get_mysql_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
-            update_query = f"UPDATE {tableName} SET name_key = %s, description = %s, link_type = %s, link_sub_type = %s, updated_at = %s WHERE id = %s;"
-            cursor.execute(update_query, (name_key, description, link_type, link_sub_type, updated_at, id))
-            logger.info(update_query, name_key, description, link_type, link_sub_type, updated_at, id)
+            update_query = f"UPDATE {tableName} SET name_key = %s, description = %s, sort_order = %s, updated_at = %s WHERE id = %s;"
+            cursor.execute(update_query, (name_key, description, sort_order, updated_at, id))
+            logger.info(update_query, name_key, description, sort_order, updated_at, id)
             conn.commit()
 
             # 取得更新後的資料

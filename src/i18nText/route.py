@@ -6,12 +6,12 @@ from . import query
 import logging
 logger = logging.getLogger("flask.app")
 
-routeName = 'categoryGroup'
+routeName = 'i18nText'
 
-bp_categoryGroup = Blueprint(routeName, __name__)
+bp_i18nText = Blueprint(routeName, __name__)
 
 
-@bp_categoryGroup.route(f"/{routeName}/list", methods=["POST"])
+@bp_i18nText.route(f"/{routeName}/list", methods=["POST"])
 def list():
     """取得設定版本
 
@@ -39,7 +39,7 @@ def list():
         logger.error(f"App: {app_name}, 取得失敗: {error_result}")
         return json_result
 
-@bp_categoryGroup.route(f"/{routeName}/get", methods=["POST"])
+@bp_i18nText.route(f"/{routeName}/get", methods=["POST"])
 def get():
     """取得設定版本
 
@@ -66,7 +66,7 @@ def get():
         logger.error(f"App: {app_name}, 取得失敗: {error_result}")
         return json_result
 
-@bp_categoryGroup.route(f"/{routeName}/create", methods=["POST"])
+@bp_i18nText.route(f"/{routeName}/create", methods=["POST"])
 def create():
     """建立設定版本
 
@@ -95,7 +95,7 @@ def create():
         logger.error(f"App: {app_name}, 建立失敗: {error_result}")
         return json_result
 
-@bp_categoryGroup.route(f"/{routeName}/update", methods=["POST"])
+@bp_i18nText.route(f"/{routeName}/update", methods=["POST"])
 def update():
     """更新設定版本
 
@@ -128,7 +128,7 @@ def update():
         logger.error(f"App: {app_name}, 更新失敗: {error_result}")
         return json_result
 
-@bp_categoryGroup.route(f"/{routeName}/delete", methods=["POST"])
+@bp_i18nText.route(f"/{routeName}/delete", methods=["POST"])
 def delete():
     """刪除設定版本
 
@@ -155,7 +155,7 @@ def delete():
         logger.error(f"App: {app_name}, 刪除失敗: {error_result}")
         return json_result
 
-@bp_categoryGroup.route(f"/{routeName}/deleteMany", methods=["POST"])
+@bp_i18nText.route(f"/{routeName}/deleteMany", methods=["POST"])
 def deleteMany():
     """刪除設定版本
 

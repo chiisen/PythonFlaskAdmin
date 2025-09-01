@@ -10,9 +10,20 @@ logger = logging.getLogger("flask.app")
 
 tableName = 'sport_category'
 
+
 selectField = f"item_id, option_id, updated_at, created_at"
 insertField = f"item_id, option_id, updated_at, created_at"
 insertValues = f"%s, %s, NOW(), NOW()"
+
+def get_sort_field(sort_field):
+    """處理排序欄位，
+    將 id 轉為 item_id，因為 id 為 item_id-option_id 組合而成，需要拆解
+    如果 sort['field'] 是 "id"，就會變成： ORDER BY item_id, option_id
+    """
+    
+    if sort_field == "id":
+        return "item_id, option_id"
+    return sort_field
 
 def format_result(row):
     """格式化 result
@@ -54,9 +65,8 @@ def list(sort, pagination):
                 query = f"SELECT {selectField} FROM {tableName} ORDER BY updated_at DESC LIMIT %s OFFSET %s;"
                 query_args = (per_page, offset)
             else:
-                if sort['field'] == "id": # 預設欄位是 id，但是 sport_category 沒有 id 欄位
-                    sort['field'] = "item_id"
-                query = f"SELECT {selectField} FROM {tableName} ORDER BY {sort['field']} {sort['order']} LIMIT %s OFFSET %s;"
+                sort_field = get_sort_field(sort['field'])
+                query = f"SELECT {selectField} FROM {tableName} ORDER BY {sort_field} {sort['order']} LIMIT %s OFFSET %s;"
                 query_args = (per_page, offset)
 
             cursor.execute(query, query_args)
@@ -109,7 +119,7 @@ def get(item_id, option_id):
                     "result": format_result(row)
                 }
             else:
-                return {"is_success": False, "result": "無法獲取設定版本"}
+                return {"is_success": False, "result": "無法獲取設定"}
     except Exception as e:
         return {"is_success": False, "result": f"連線失敗: {e}"}
     finally:

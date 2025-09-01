@@ -30,6 +30,7 @@ from sportItem.route import bp_sportItem
 from sportCategory.route import bp_sportCategory
 from categoryGroup.route import bp_categoryGroup
 from categoryOption.route import bp_categoryOption
+from i18nText.route import bp_i18nText
 # 匯入 blueprint [End]
 
 
@@ -45,6 +46,7 @@ app.register_blueprint(bp_sportItem)
 app.register_blueprint(bp_sportCategory)
 app.register_blueprint(bp_categoryGroup)
 app.register_blueprint(bp_categoryOption)
+app.register_blueprint(bp_i18nText)
 # 註冊 blueprint [End]
 
 
