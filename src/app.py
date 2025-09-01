@@ -28,6 +28,7 @@ from posts.posts import bp_posts
 from settingVersion.route import bp_settingVersion
 from sportItem.route import bp_sportItem
 from sportCategory.route import bp_sportCategory
+from categoryGroup.route import bp_categoryGroup
 # 匯入 blueprint [End]
 
 
@@ -41,6 +42,7 @@ app.register_blueprint(bp_posts)
 app.register_blueprint(bp_settingVersion)
 app.register_blueprint(bp_sportItem)
 app.register_blueprint(bp_sportCategory)
+app.register_blueprint(bp_categoryGroup)
 # 註冊 blueprint [End]
 
 
