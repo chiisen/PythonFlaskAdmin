@@ -172,7 +172,7 @@ def create(name_key, description, link_type, link_sub_type):
             except:
                 pass
 
-def update(id, version):
+def update(id, name_key, description, link_type, link_sub_type, updated_at):
     """更新設定版本
 
     Returns:
@@ -185,14 +185,9 @@ def update(id, version):
     try:
         conn = mysql.get_mysql_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
-            if version:
-                update_query = f"UPDATE {tableName} SET version = %s, updated_at = NOW() WHERE id = %s;"
-                cursor.execute(update_query, (version, id))
-                logger.info(update_query, version, id)
-            else:
-                update_query = f"UPDATE {tableName} SET updated_at = NOW() WHERE id = %s;"
-                cursor.execute(update_query, (id,))
-                logger.info(update_query, id)
+            update_query = f"UPDATE {tableName} SET name_key = %s, description = %s, link_type = %s, link_sub_type = %s, updated_at = %s WHERE id = %s;"
+            cursor.execute(update_query, (name_key, description, link_type, link_sub_type, updated_at, id))
+            logger.info(update_query, name_key, description, link_type, link_sub_type, updated_at, id)
             conn.commit()
 
             # 取得更新後的資料

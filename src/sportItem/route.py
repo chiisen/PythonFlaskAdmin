@@ -107,9 +107,15 @@ def update():
     app_name = request.headers.get('appName')
 
     id = request.json.get("id") if request.json else None  # 取得 id 參數
-    version = request.json.get("version") if request.json else None  # 取得 version 參數
+    data = request.json.get("data") if request.json else None  # 取得 data 參數
 
-    response = query.update(id, version)
+    name_key = data.get("name_key") if data and "name_key" in data else None  # 取得 name_key 參數
+    description = data.get("description") if data and "description" in data else None  # 取得 description 參數
+    link_type = data.get("link_type") if data and "link_type" in data else None  # 取得 link_type 參數
+    link_sub_type = data.get("link_sub_type") if data and "link_sub_type" in data else None  # 取得 link_sub_type 參數
+    updated_at = data.get("updated_at") if data and "updated_at" in data else None  # 取得 updated_at 參數
+
+    response = query.update(id, name_key, description, link_type, link_sub_type, updated_at)
     is_success = response["is_success"]
     result = response["result"]
     if(is_success == True):
