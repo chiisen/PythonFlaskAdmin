@@ -105,10 +105,13 @@ def update():
 
     app_name = request.headers.get('appName')
 
-    id = request.json.get("id") if request.json else None  # 取得 id 參數
-    version = request.json.get("version") if request.json else None  # 取得 version 參數
+    id = request.json.get("id") if request.json else None  # 取得 id 參數(因為 id 必填，但是不允許修改，所以不放在 data 裡面)    
+    data = request.json.get("data") if request.json else None  # 取得 data 參數
+    
+    version = data.get("version") if data and "version" in data else None  # 取得 version 參數
+    updated_at = data.get("updated_at") if data and "updated_at" in data else None  # 取得 updated_at 參數
 
-    response = query.update(id, version)
+    response = query.update(id, version, updated_at)
     is_success = response["is_success"]
     result = response["result"]
     if(is_success == True):
