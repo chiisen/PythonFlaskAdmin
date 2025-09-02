@@ -227,7 +227,6 @@ def deleteMany(ids):
                 item_id, option_id = id.split('-', 1)
                 delete_query = f"DELETE FROM {tableName} WHERE item_id = %s AND option_id = %s;"
                 cursor.execute(delete_query, (item_id, option_id))
-                #logger.info(delete_query, (item_id, option_id))
                 logger.info(f"{delete_query} {item_id}, {option_id}")
             conn.commit()
             
