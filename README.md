@@ -50,3 +50,22 @@ pip freeze > requirements.txt
 ```
 這會把目前環境所有已安裝套件及版本寫入 requirements.txt。
 
+## 安裝依賴
+```bash
+pip install -r requirements.txt
+```
+
+## uv 進行開發
+1. 建立 uv 虛擬環境並安裝依賴：
+```bash
+uv venv
+uv pip install -r requirements.txt
+```
+2. 啟動 Flask（用原生 Python，會自動使用 uv 建立的虛擬環境）：
+```bash
+$env:PYTHONPATH="E:\GitHub\chiisen\PythonFlaskAdmin\src"
+$env:FLASK_APP="src/app.py"
+.venv\Scripts\activate
+python -m flask run
+```
+
