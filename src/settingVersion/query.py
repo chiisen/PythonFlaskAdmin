@@ -67,8 +67,8 @@ def list(sort, pagination):
                 query = f"SELECT {selectField} FROM {tableName} ORDER BY {sort_field} {sort['order']} LIMIT %s OFFSET %s;"
                 query_args = (per_page, offset)
 
+            logger.info(f"{query} {query_args}")
             cursor.execute(query, query_args)
-            logger.info(query)
 
             rows = cursor.fetchall()
             # 查詢總筆數
@@ -106,8 +106,8 @@ def get(id):
         conn = mysql.get_mysql_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             query = f"SELECT {selectField} FROM {tableName} WHERE id = %s;"
-            cursor.execute(query, (id,))
             logger.info(query, id)
+            cursor.execute(query, (id,))
 
             row = cursor.fetchone()
             if row:
@@ -141,15 +141,15 @@ def create(data_type, version):
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             # 新增一筆資料
             insert_query = f"INSERT INTO {tableName} ({insertField}) VALUES ({insertValues});"
+            logger.info(insert_query, data_type, version)
             cursor.execute(insert_query, (data_type, version))
             conn.commit()
-            logger.info(insert_query, data_type, version)
 
             # 取得剛新增的資料（用自動產生的 id）
             last_id = cursor.lastrowid
             select_query = f"SELECT {selectField} FROM {tableName} WHERE id = %s;"
-            cursor.execute(select_query, (last_id,))
             logger.info(select_query, last_id)
+            cursor.execute(select_query, (last_id,))
             row = cursor.fetchone()
             if row:
                 return {"is_success": True, "result": {"data": format_result(row)}}
@@ -179,19 +179,19 @@ def update(id, version, updated_at):
         conn = mysql.get_mysql_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             update_query = f"UPDATE {tableName} SET version = %s, updated_at = %s WHERE id = %s;"
-            cursor.execute(update_query, (version, updated_at, id))
             logger.info(update_query, version, updated_at, id)
+            cursor.execute(update_query, (version, updated_at, id))
             conn.commit()
 
             # 取得更新後的資料
             select_query = f"SELECT {selectField} FROM {tableName} WHERE id = %s;"
-            cursor.execute(select_query, (id,))
             logger.info(select_query, id)
+            cursor.execute(select_query, (id,))
             row = cursor.fetchone()
             if row:
                 return {"is_success": True, "result": {"data": format_result(row)}}
             else:
-                return {"is_success": False, "result": "無法獲取更新後的設定版本"}
+                return {"is_success": False, "result": "無法獲取更新後的設定"}
     except Exception as e:
         logger.exception("Exception")
         return {"is_success": False, "result": f"連線失敗: {e}"}
@@ -216,9 +216,9 @@ def delete(id):
         conn = mysql.get_mysql_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             delete_query = f"DELETE FROM {tableName} WHERE id = %s;"
+            logger.info(delete_query, id)
             cursor.execute(delete_query, (id,))
             conn.commit()
-            logger.info(delete_query, id)
             return {"is_success": True, "result": {"data": {"id": id}}}
     except Exception as e:
         logger.exception("Exception")

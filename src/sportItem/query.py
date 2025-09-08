@@ -14,6 +14,10 @@ selectField = f"id, name_key, description, link_type, link_sub_type, updated_at,
 insertField = f"name_key, description, link_type, link_sub_type, updated_at, created_at"
 insertValues = f"%s, %s, %s, %s, NOW(), NOW()"
 
+
+version_setting_data_type = 'getSportItemCategories'
+
+
 def get_sort_field(sort_field):
     """處理排序欄位，
     id 不做轉換
@@ -108,15 +112,12 @@ def get(id):
         conn = mysql.get_mysql_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             query = f"SELECT {selectField} FROM {tableName} WHERE id = %s;"
-            cursor.execute(query, (id,))
             logger.info(query, id)
+            cursor.execute(query, (id,))
 
             row = cursor.fetchone()
             if row:
-                return {
-                    "is_success": True,
-                    "result": format_result(row)
-                }
+                return {"is_success": True, "result": {"data": format_result(row)}}
             else:
                 return {"is_success": False, "result": "無法獲取設定"}
     except Exception as e:
@@ -149,21 +150,23 @@ def create(name_key, description, link_type, link_sub_type):
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             # 新增一筆資料
             insert_query = f"INSERT INTO {tableName} ({insertField}) VALUES ({insertValues});"
+            logger.info(insert_query, name_key, description, link_type, link_sub_type)
             cursor.execute(insert_query, (name_key, description, link_type, link_sub_type))
             conn.commit()
-            logger.info(insert_query, name_key, description, link_type, link_sub_type)
 
             # 取得剛新增的資料（用自動產生的 id）
             last_id = cursor.lastrowid
             select_query = f"SELECT {selectField} FROM {tableName} WHERE id = %s;"
-            cursor.execute(select_query, (last_id,))
             logger.info(select_query, last_id)
+            cursor.execute(select_query, (last_id,))
             row = cursor.fetchone()
             if row:
-                return {
-                    "is_success": True,
-                    "result": format_result(row)
-                }
+                # 這邊還要更新 setting_versions 的 updated_at 時間
+                update_query = f"UPDATE setting_versions SET updated_at = NOW() WHERE data_type = %s;"
+                logger.info(update_query, version_setting_data_type)
+                cursor.execute(update_query, (version_setting_data_type,))
+                conn.commit()
+                return {"is_success": True, "result": {"data": format_result(row)}}
             else:
                 return {"is_success": False, "result": "無法獲取新增後的設定版本"}
     except Exception as e:
@@ -190,22 +193,24 @@ def update(id, name_key, description, link_type, link_sub_type, updated_at):
         conn = mysql.get_mysql_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             update_query = f"UPDATE {tableName} SET name_key = %s, description = %s, link_type = %s, link_sub_type = %s, updated_at = %s WHERE id = %s;"
-            cursor.execute(update_query, (name_key, description, link_type, link_sub_type, updated_at, id))
             logger.info(update_query, name_key, description, link_type, link_sub_type, updated_at, id)
+            cursor.execute(update_query, (name_key, description, link_type, link_sub_type, updated_at, id))
             conn.commit()
 
             # 取得更新後的資料
             select_query = f"SELECT {selectField} FROM {tableName} WHERE id = %s;"
-            cursor.execute(select_query, (id,))
             logger.info(select_query, id)
+            cursor.execute(select_query, (id,))
             row = cursor.fetchone()
             if row:
-                return {
-                    "is_success": True,
-                    "result": format_result(row)
-                }
+                # 這邊還要更新 setting_versions 的 updated_at 時間
+                update_query = f"UPDATE setting_versions SET updated_at = NOW() WHERE data_type = %s;"
+                logger.info(update_query, version_setting_data_type)
+                cursor.execute(update_query, (version_setting_data_type,))
+                conn.commit()
+                return {"is_success": True, "result": {"data": format_result(row)}}
             else:
-                return {"is_success": False, "result": "無法獲取更新後的設定版本"}
+                return {"is_success": False, "result": "無法獲取更新後的設定"}
     except Exception as e:
         logger.exception("Exception")
         return {"is_success": False, "result": f"連線失敗: {e}"}
@@ -230,10 +235,16 @@ def delete(id):
         conn = mysql.get_mysql_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             delete_query = f"DELETE FROM {tableName} WHERE id = %s;"
+            logger.info(delete_query, id)
             cursor.execute(delete_query, (id,))
             conn.commit()
-            logger.info(delete_query, id)
-            return {"is_success": True, "result": {"id": id}}
+
+            # 這邊還要更新 setting_versions 的 updated_at 時間
+            update_query = f"UPDATE setting_versions SET updated_at = NOW() WHERE data_type = %s;"
+            logger.info(update_query, version_setting_data_type)
+            cursor.execute(update_query, (version_setting_data_type,))
+            conn.commit()
+            return {"is_success": True, "result": {"data": {"id": id}}}
     except Exception as e:
         logger.exception("Exception")
         return {"is_success": False, "result": f"連線失敗: {e}"}
@@ -267,10 +278,16 @@ def deleteMany(ids):
             # 產生 SQL IN 條件
             format_strings = ','.join(['%s'] * len(ids))
             delete_query = f"DELETE FROM {tableName} WHERE id IN ({format_strings});"
+            logger.info(f"{delete_query} {ids}")
             cursor.execute(delete_query, tuple(ids))
             conn.commit()
-            logger.info(delete_query, ids)
-            return {"is_success": True, "result": ids}
+
+            # 這邊還要更新 setting_versions 的 updated_at 時間
+            update_query = f"UPDATE setting_versions SET updated_at = NOW() WHERE data_type = %s;"
+            logger.info(update_query, version_setting_data_type)
+            cursor.execute(update_query, (version_setting_data_type,))
+            conn.commit()
+            return {"is_success": True, "result": {"data": ids}}
     except Exception as e:
         logger.exception("Exception")
         return {"is_success": False, "result": f"連線失敗: {e}"}

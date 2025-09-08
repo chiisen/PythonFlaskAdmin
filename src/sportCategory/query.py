@@ -15,6 +15,10 @@ selectField = f"item_id, option_id, updated_at, created_at"
 insertField = f"item_id, option_id, updated_at, created_at"
 insertValues = f"%s, %s, NOW(), NOW()"
 
+
+version_setting_data_type = 'getSportItemCategories'
+
+
 def get_sort_field(sort_field):
     """處理排序欄位，
     將 id 轉為 item_id，因為 id 為 item_id-option_id 組合而成，需要拆解
@@ -69,8 +73,8 @@ def list(sort, pagination):
                 query = f"SELECT {selectField} FROM {tableName} ORDER BY {sort_field} {sort['order']} LIMIT %s OFFSET %s;"
                 query_args = (per_page, offset)
 
+            logger.info(f"{query} {query_args}")
             cursor.execute(query, query_args)
-            logger.info(query)
 
             rows = cursor.fetchall()
             # 查詢總筆數
@@ -110,15 +114,12 @@ def get(item_id, option_id):
         conn = mysql.get_mysql_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             query = f"SELECT {selectField} FROM {tableName} WHERE item_id = %s AND option_id = %s;"
-            cursor.execute(query, (item_id, option_id))
             logger.info(query, item_id, option_id)
+            cursor.execute(query, (item_id, option_id))
 
             row = cursor.fetchone()
             if row:
-                return {
-                    "is_success": True,
-                    "result": format_result(row)
-                }
+                return {"is_success": True, "result": {"data": format_result(row)}}
             else:
                 return {"is_success": False, "result": "無法獲取設定"}
     except Exception as e:
@@ -148,19 +149,21 @@ def create(item_id, option_id):
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             # 新增一筆資料
             insert_query = f"INSERT INTO {tableName} ({insertField}) VALUES ({insertValues});"
+            logger.info(insert_query, item_id, option_id)
             cursor.execute(insert_query, (item_id, option_id))
             conn.commit()
-            logger.info(insert_query, item_id, option_id)
 
             select_query = f"SELECT {selectField} FROM {tableName} WHERE item_id = %s AND option_id = %s;"
-            cursor.execute(select_query, (item_id, option_id))
             logger.info(select_query, item_id, option_id)
+            cursor.execute(select_query, (item_id, option_id))
             row = cursor.fetchone()
             if row:
-                return {
-                    "is_success": True,
-                    "result": format_result(row)
-                }
+                # 這邊還要更新 setting_versions 的 updated_at 時間
+                update_query = f"UPDATE setting_versions SET updated_at = NOW() WHERE data_type = %s;"
+                logger.info(update_query, version_setting_data_type)
+                cursor.execute(update_query, (version_setting_data_type,))
+                conn.commit()
+                return {"is_success": True, "result": {"data": format_result(row)}}
             else:
                 return {"is_success": False, "result": "無法獲取新增後的設定版本"}
     except Exception as e:
@@ -189,9 +192,15 @@ def delete(item_id, option_id):
         conn = mysql.get_mysql_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             delete_query = f"DELETE FROM {tableName} WHERE item_id = %s AND option_id = %s;"
+            logger.info(delete_query, item_id, option_id)
             cursor.execute(delete_query, (item_id, option_id))
             conn.commit()
-            logger.info(delete_query, item_id, option_id)
+
+            # 這邊還要更新 setting_versions 的 updated_at 時間
+            update_query = f"UPDATE setting_versions SET updated_at = NOW() WHERE data_type = %s;"
+            logger.info(update_query, version_setting_data_type)
+            cursor.execute(update_query, (version_setting_data_type,))
+            conn.commit()
             return {"is_success": True, "result": {"id": f"{item_id}-{option_id}"}}
     except Exception as e:
         logger.exception("Exception")
@@ -230,10 +239,15 @@ def deleteMany(ids):
             for id in ids:
                 item_id, option_id = id.split('-', 1)
                 delete_query = f"DELETE FROM {tableName} WHERE item_id = %s AND option_id = %s;"
-                cursor.execute(delete_query, (item_id, option_id))
                 logger.info(f"{delete_query} {item_id}, {option_id}")
+                cursor.execute(delete_query, (item_id, option_id))                
             conn.commit()
             
+            # 這邊還要更新 setting_versions 的 updated_at 時間
+            update_query = f"UPDATE setting_versions SET updated_at = NOW() WHERE data_type = %s;"
+            logger.info(update_query, version_setting_data_type)
+            cursor.execute(update_query, (version_setting_data_type,))
+            conn.commit()
             return {"is_success": True, "result": ids}
     except Exception as e:
         logger.exception("Exception")

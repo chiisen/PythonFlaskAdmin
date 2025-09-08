@@ -195,7 +195,7 @@ def update(id, text):
             if row:
                 return {"is_success": True, "result": {"data": format_result(row)}}
             else:
-                return {"is_success": False, "result": "無法獲取更新後的設定版本"}
+                return {"is_success": False, "result": "無法獲取更新後的設定"}
     except Exception as e:
         logger.exception("Exception")
         return {"is_success": False, "result": f"連線失敗: {e}"}

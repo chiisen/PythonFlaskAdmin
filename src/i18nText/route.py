@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, request
 from . import query
 # from 主目錄.子目錄 import 檔名(py檔)
 
@@ -15,6 +15,10 @@ logger = logging.getLogger("flask.app")
 routeName = 'i18nText'
 
 bp_i18nText = Blueprint(routeName, __name__)
+
+
+from utils import check_result
+
 
 def check_id(id):
     """檢查 id 參數是否存在
@@ -33,53 +37,6 @@ def check_id(id):
         return Response(resp, status=400, mimetype='application/json')
     return None
 
-def check_result(response, app_name):
-    """處理查詢結果
-
-    Args:
-        response (dict): 查詢結果
-
-    Returns:
-        Response: 回傳的 HTTP 回應
-    """
-    is_success = response["is_success"]
-    result = response["result"]
-    if isinstance(result, dict):
-        if is_success == True:
-            json_result = {
-                k: v for k, v in [
-                    ("data", result.get("data")), 
-                    ("total", result.get("total")), 
-                    ("id", result.get("id")), 
-                    ("ids", result.get("ids"))
-                ] if v is not None
-            }
-            resp = json.dumps(json_result, ensure_ascii=False)
-            logger.debug(f"[{filename}][{request.path}][{request.method}] App: {app_name}, 成功: {json_result}")
-        else:
-            json_result = {
-                k: v for k, v in [
-                    ("data", result.get("data")), 
-                    ("total", result.get("total")), 
-                    ("id", result.get("id")), 
-                    ("ids", result.get("ids")),
-                    ("error", result.get("error"))
-                ] if v is not None
-            }
-            resp = json.dumps(json_result, ensure_ascii=False)
-            logger.warning(f"[{filename}][{request.path}][{request.method}] App: {app_name}, 失敗: {json_result}")
-    else:
-        # result 不是 dict，直接包成 data
-        if is_success == True:
-            json_result = {"data": result}
-            resp = json.dumps(json_result, ensure_ascii=False)
-            logger.debug(f"[{filename}][{request.path}][{request.method}] App: {app_name}, 成功: {json_result}")
-        else:
-            json_result = {"data": [], "error": result}
-            resp = json.dumps(json_result, ensure_ascii=False)
-            logger.warning(f"[{filename}][{request.path}][{request.method}] App: {app_name}, 失敗: {json_result}")
-
-    return Response(resp, status=200, mimetype='application/json')
 
 @bp_i18nText.route(f"/{routeName}/list", methods=["POST"])
 def list():
@@ -95,7 +52,7 @@ def list():
     pagination = request.json.get("pagination") if request.json else None  # 取得 pagination 參數
 
     response = query.list(sort, pagination)
-    return check_result(response, app_name)
+    return check_result.check_result(logger, filename, request.path, request.method, response, app_name)
 
 @bp_i18nText.route(f"/{routeName}/get", methods=["POST"])
 def get():
@@ -113,7 +70,7 @@ def get():
         return resp
 
     response = query.get(id)
-    return check_result(response, app_name)
+    return check_result.check_result(logger, filename, request.path, request.method, response, app_name)
 
 @bp_i18nText.route(f"/{routeName}/create", methods=["POST"])
 def create():
@@ -130,7 +87,7 @@ def create():
     text = request.json.get("text") if request.json else None  # 取得 text 參數
 
     response = query.create(key, lang, text)
-    return check_result(response, app_name)
+    return check_result.check_result(logger, filename, request.path, request.method, response, app_name)
 
 @bp_i18nText.route(f"/{routeName}/update", methods=["POST"])
 def update():
@@ -151,7 +108,7 @@ def update():
     text = data.get("text") if data and "text" in data else None  # 取得 text 參數
 
     response = query.update(id, text)
-    return check_result(response, app_name)
+    return check_result.check_result(logger, filename, request.path, request.method, response, app_name)
 
 @bp_i18nText.route(f"/{routeName}/delete", methods=["POST"])
 def delete():
@@ -169,7 +126,7 @@ def delete():
         return resp
 
     response = query.delete(id)
-    return check_result(response, app_name)
+    return check_result.check_result(logger, filename, request.path, request.method, response, app_name)
 
 @bp_i18nText.route(f"/{routeName}/deleteMany", methods=["POST"])
 def deleteMany():
@@ -184,4 +141,4 @@ def deleteMany():
     ids = request.json.get("ids") if request.json else None  # 取得 ids 參數
 
     response = query.deleteMany(ids)
-    return check_result(response, app_name)
+    return check_result.check_result(logger, filename, request.path, request.method, response, app_name)
