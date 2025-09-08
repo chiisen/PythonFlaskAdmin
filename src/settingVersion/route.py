@@ -3,14 +3,66 @@ from . import query
 # from 主目錄.子目錄 import 檔名(py檔)
 
 
+import os
+filename = os.path.basename(__file__)
+
+
 import logging
+import json
+from flask import Response
 logger = logging.getLogger("flask.app")
 
 routeName = 'settingVersion'
 
 bp_settingVersion = Blueprint(routeName, __name__)
 
+def check_result(response, app_name):
+    """處理查詢結果
 
+    Args:
+        response (dict): 查詢結果
+
+    Returns:
+        Response: 回傳的 HTTP 回應
+    """
+    is_success = response["is_success"]
+    result = response["result"]
+    if isinstance(result, dict):
+        if is_success == True:
+            json_result = {
+                k: v for k, v in [
+                    ("data", result.get("data")), 
+                    ("total", result.get("total")), 
+                    ("id", result.get("id")), 
+                    ("ids", result.get("ids"))
+                ] if v is not None
+            }
+            resp = json.dumps(json_result, ensure_ascii=False)
+            logger.debug(f"[{filename}][{request.path}][{request.method}] App: {app_name}, 成功: {json_result}")
+        else:
+            json_result = {
+                k: v for k, v in [
+                    ("data", result.get("data")), 
+                    ("total", result.get("total")), 
+                    ("id", result.get("id")), 
+                    ("ids", result.get("ids")),
+                    ("error", result.get("error"))
+                ] if v is not None
+            }
+            resp = json.dumps(json_result, ensure_ascii=False)
+            logger.warning(f"[{filename}][{request.path}][{request.method}] App: {app_name}, 失敗: {json_result}")
+    else:
+        # result 不是 dict，直接包成 data
+        if is_success == True:
+            json_result = {"data": result}
+            resp = json.dumps(json_result, ensure_ascii=False)
+            logger.debug(f"[{filename}][{request.path}][{request.method}] App: {app_name}, 成功: {json_result}")
+        else:
+            json_result = {"data": [], "error": result}
+            resp = json.dumps(json_result, ensure_ascii=False)
+            logger.warning(f"[{filename}][{request.path}][{request.method}] App: {app_name}, 失敗: {json_result}")
+
+    return Response(resp, status=200, mimetype='application/json')
 
 @bp_settingVersion.route(f"/{routeName}/list", methods=["POST"])
 def list():
@@ -26,19 +78,7 @@ def list():
     pagination = request.json.get("pagination") if request.json else None  # 取得 pagination 參數
 
     response = query.list(sort, pagination)
-    is_success = response["is_success"]
-    result = response["result"]
-    if(is_success == True):
-        json_format_result = {"data": result["data"], "total": result["total"]}
-        json_result = jsonify(json_format_result)
-        logger.info(f"App: {app_name}, 取得成功: {result}")
-        return json_result
-    else:
-        json_format_result = {"data": [], "total": 0}
-        error_result = jsonify({ "error": result })
-        json_result = jsonify(json_format_result)
-        logger.error(f"App: {app_name}, 取得失敗: {error_result}")
-        return json_result
+    return check_result(response, app_name)
     
 @bp_settingVersion.route(f"/{routeName}/get", methods=["POST"])
 def get():
@@ -58,13 +98,12 @@ def get():
     if(is_success == True):
         json_format_result = {"data": result}
         json_result = jsonify(json_format_result)
-        logger.info(f"App: {app_name}, 取得成功: {result}")
+        logger.info(f"[{filename}][{request.path}][{request.method}] App: {app_name}, 成功: {result}")
         return json_result
     else:
-        json_format_result = {"data": []}
-        error_result = jsonify({ "error": result })
+        json_format_result = {"data": [], "error": result}
         json_result = jsonify(json_format_result)
-        logger.error(f"App: {app_name}, 取得失敗: {error_result}")
+        logger.error(f"[{filename}][{request.path}][{request.method}] App: {app_name}, 失敗: {result}")
         return json_result
     
 @bp_settingVersion.route(f"/{routeName}/create", methods=["POST"])
@@ -86,13 +125,12 @@ def create():
     if(is_success == True):
         json_format_result = {"data": result}
         json_result = jsonify(json_format_result)
-        logger.info(f"App: {app_name}, 建立成功: {result}")
+        logger.info(f"[{filename}][{request.path}][{request.method}] App: {app_name}, 成功: {result}")
         return json_result
     else:
-        json_format_result = {"data": []}
-        error_result = jsonify({ "error": result })
+        json_format_result = {"data": [], "error": result}
         json_result = jsonify(json_format_result)
-        logger.error(f"App: {app_name}, 建立失敗: {error_result}")
+        logger.error(f"[{filename}][{request.path}][{request.method}] App: {app_name}, 失敗: {result}")
         return json_result
     
 @bp_settingVersion.route(f"/{routeName}/update", methods=["POST"])
@@ -117,13 +155,12 @@ def update():
     if(is_success == True):
         json_format_result = {"data": result}
         json_result = jsonify(json_format_result)
-        logger.info(f"App: {app_name}, 更新成功: {result}")
+        logger.info(f"[{filename}][{request.path}][{request.method}] App: {app_name}, 成功: {result}")
         return json_result
     else:
-        json_format_result = {"data": []}
-        error_result = jsonify({ "error": result })
+        json_format_result = {"data": [], "error": result}
         json_result = jsonify(json_format_result)
-        logger.error(f"App: {app_name}, 更新失敗: {error_result}")
+        logger.error(f"[{filename}][{request.path}][{request.method}] App: {app_name}, 失敗: {result}")
         return json_result
 
 @bp_settingVersion.route(f"/{routeName}/delete", methods=["POST"])
@@ -144,13 +181,12 @@ def delete():
     if(is_success == True):
         json_format_result = {"data": result}
         json_result = jsonify(json_format_result)
-        logger.info(f"App: {app_name}, 刪除成功: {result}")
+        logger.info(f"[{filename}][{request.path}][{request.method}] App: {app_name}, 成功: {result}")
         return json_result
     else:
-        json_format_result = {"data": []}
-        error_result = jsonify({ "error": result })
+        json_format_result = {"data": [], "error": result}
         json_result = jsonify(json_format_result)
-        logger.error(f"App: {app_name}, 刪除失敗: {error_result}")
+        logger.error(f"[{filename}][{request.path}][{request.method}] App: {app_name}, 失敗: {result}")
         return json_result
     
 @bp_settingVersion.route(f"/{routeName}/deleteMany", methods=["POST"])
@@ -171,11 +207,10 @@ def deleteMany():
     if(is_success == True):
         json_format_result = {"data": result}
         json_result = jsonify(json_format_result)
-        logger.info(f"App: {app_name}, 刪除成功: {result}")
+        logger.info(f"[{filename}][{request.path}][{request.method}] App: {app_name}, 成功: {result}")
         return json_result
     else:
-        json_format_result = {"data": []}
-        error_result = jsonify({ "error": result })
+        json_format_result = {"data": [], "error": result}
         json_result = jsonify(json_format_result)
-        logger.error(f"App: {app_name}, 刪除失敗: {error_result}")
+        logger.error(f"[{filename}][{request.path}][{request.method}] App: {app_name}, 失敗: {result}")
         return json_result
