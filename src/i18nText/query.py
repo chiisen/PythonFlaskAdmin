@@ -82,9 +82,10 @@ def list(sort, pagination):
                 array = [format_result(row) for row in rows]
                 return {"is_success": True, "result": {"data": array, "total": total}}
             else:
-                return {"is_success": False, "result": {"data": [], "total": 0, "error": "無法獲取設定"}}
+                return {"is_success": False, "result": "無法獲取設定"}
     except Exception as e:
-        return {"is_success": False, "error": f"連線失敗: {e}"}
+        logger.exception("Exception")
+        return {"is_success": False, "result": f"連線失敗: {e}"}
     finally:
         if conn:
             try:
@@ -113,9 +114,10 @@ def get(id):
             if row:
                 return {"is_success": True, "result": {"data": format_result(row)}}
             else:
-                return {"is_success": False, "result": {"data": [], "total": 0, "error": "無法獲取設定"}}
+                return {"is_success": False, "result": "無法獲取設定"}
     except Exception as e:
-        return {"is_success": False, "error": f"連線失敗: {e}"}
+        logger.exception("Exception")
+        return {"is_success": False, "result": f"連線失敗: {e}"}
     finally:
         if conn:
             try:
@@ -154,9 +156,10 @@ def create(key, lang, text):
             if row:
                 return {"is_success": True, "result": {"data": format_result(row)}}
             else:
-                return {"is_success": False, "result": {"data": [], "total": 0, "error": "無法獲取新增後的設定"}}
+                return {"is_success": False, "result": "無法獲取新增後的設定版本"}
     except Exception as e:
-        return {"is_success": False, "error": f"連線失敗: {e}"}
+        logger.exception("Exception")
+        return {"is_success": False, "result": f"連線失敗: {e}"}
     finally:
         if conn:
             try:
@@ -192,9 +195,10 @@ def update(id, text):
             if row:
                 return {"is_success": True, "result": {"data": format_result(row)}}
             else:
-                return {"is_success": False, "result": {"data": [], "total": 0, "error": "無法獲取更新後的設定"}}
+                return {"is_success": False, "result": "無法獲取更新後的設定版本"}
     except Exception as e:
-        return {"is_success": False, "error": f"連線失敗: {e}"}
+        logger.exception("Exception")
+        return {"is_success": False, "result": f"連線失敗: {e}"}
     finally:
         if conn:
             try:
@@ -221,7 +225,8 @@ def delete(id):
             conn.commit()
             return {"is_success": True, "result": {"data": {"id": id}}}
     except Exception as e:
-        return {"is_success": False, "error": f"連線失敗: {e}"}
+        logger.exception("Exception")
+        return {"is_success": False, "result": f"連線失敗: {e}"}
     finally:
         if conn:
             try:
@@ -256,7 +261,8 @@ def deleteMany(ids):
 
             return {"is_success": True, "result": {"data": ids}}
     except Exception as e:
-        return {"is_success": False, "error": f"連線失敗: {e}"}
+        logger.exception("Exception")
+        return {"is_success": False, "result": f"連線失敗: {e}"}
     finally:
         if conn:
             try:
