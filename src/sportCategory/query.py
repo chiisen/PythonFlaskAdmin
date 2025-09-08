@@ -85,6 +85,7 @@ def list(sort, pagination):
             else:
                 return {"is_success": False, "result": "無法獲取設定"}
     except Exception as e:
+        logger.exception("Exception")
         return {"is_success": False, "result": f"連線失敗: {e}"}
     finally:
         if conn:
@@ -121,6 +122,7 @@ def get(item_id, option_id):
             else:
                 return {"is_success": False, "result": "無法獲取設定"}
     except Exception as e:
+        logger.exception("Exception")
         return {"is_success": False, "result": f"連線失敗: {e}"}
     finally:
         if conn:
@@ -162,6 +164,7 @@ def create(item_id, option_id):
             else:
                 return {"is_success": False, "result": "無法獲取新增後的設定版本"}
     except Exception as e:
+        logger.exception("Exception")
         return {"is_success": False, "result": f"連線失敗: {e}"}
     finally:
         if conn:
@@ -191,6 +194,7 @@ def delete(item_id, option_id):
             logger.info(delete_query, item_id, option_id)
             return {"is_success": True, "result": {"id": f"{item_id}-{option_id}"}}
     except Exception as e:
+        logger.exception("Exception")
         return {"is_success": False, "result": f"連線失敗: {e}"}
     finally:
         if conn:
@@ -232,6 +236,7 @@ def deleteMany(ids):
             
             return {"is_success": True, "result": ids}
     except Exception as e:
+        logger.exception("Exception")
         return {"is_success": False, "result": f"連線失敗: {e}"}
     finally:
         if conn:

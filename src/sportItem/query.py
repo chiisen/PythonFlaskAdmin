@@ -85,6 +85,7 @@ def list(sort, pagination):
             else:
                 return {"is_success": False, "result": "無法獲取設定"}
     except Exception as e:
+        logger.exception("Exception")
         return {"is_success": False, "result": f"連線失敗: {e}"}
     finally:
         if conn:
@@ -119,6 +120,7 @@ def get(id):
             else:
                 return {"is_success": False, "result": "無法獲取設定"}
     except Exception as e:
+        logger.exception("Exception")
         return {"is_success": False, "result": f"連線失敗: {e}"}
     finally:
         if conn:
@@ -165,6 +167,7 @@ def create(name_key, description, link_type, link_sub_type):
             else:
                 return {"is_success": False, "result": "無法獲取新增後的設定版本"}
     except Exception as e:
+        logger.exception("Exception")
         return {"is_success": False, "result": f"連線失敗: {e}"}
     finally:
         if conn:
@@ -204,6 +207,7 @@ def update(id, name_key, description, link_type, link_sub_type, updated_at):
             else:
                 return {"is_success": False, "result": "無法獲取更新後的設定版本"}
     except Exception as e:
+        logger.exception("Exception")
         return {"is_success": False, "result": f"連線失敗: {e}"}
     finally:
         if conn:
@@ -231,6 +235,7 @@ def delete(id):
             logger.info(delete_query, id)
             return {"is_success": True, "result": {"id": id}}
     except Exception as e:
+        logger.exception("Exception")
         return {"is_success": False, "result": f"連線失敗: {e}"}
     finally:
         if conn:
@@ -267,6 +272,7 @@ def deleteMany(ids):
             logger.info(delete_query, ids)
             return {"is_success": True, "result": ids}
     except Exception as e:
+        logger.exception("Exception")
         return {"is_success": False, "result": f"連線失敗: {e}"}
     finally:
         if conn:
