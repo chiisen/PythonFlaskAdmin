@@ -111,10 +111,7 @@ def get(id):
 
             row = cursor.fetchone()
             if row:
-                return {
-                    "is_success": True,
-                    "result": format_result(row)
-                }
+                return {"is_success": True, "result": {"data": format_result(row)}}
             else:
                 return {"is_success": False, "result": "無法獲取設定"}
     except Exception as e:
@@ -155,10 +152,7 @@ def create(data_type, version):
             logger.info(select_query, last_id)
             row = cursor.fetchone()
             if row:
-                return {
-                    "is_success": True,
-                    "result": format_result(row)
-                }
+                return {"is_success": True, "result": {"data": format_result(row)}}
             else:
                 return {"is_success": False, "result": "無法獲取新增後的設定版本"}
     except Exception as e:
@@ -195,10 +189,7 @@ def update(id, version, updated_at):
             logger.info(select_query, id)
             row = cursor.fetchone()
             if row:
-                return {
-                    "is_success": True,
-                    "result": format_result(row)
-                }
+                return {"is_success": True, "result": {"data": format_result(row)}}
             else:
                 return {"is_success": False, "result": "無法獲取更新後的設定版本"}
     except Exception as e:
@@ -228,7 +219,7 @@ def delete(id):
             cursor.execute(delete_query, (id,))
             conn.commit()
             logger.info(delete_query, id)
-            return {"is_success": True, "result": {"id": id}}
+            return {"is_success": True, "result": {"data": {"id": id}}}
     except Exception as e:
         logger.exception("Exception")
         return {"is_success": False, "result": f"連線失敗: {e}"}
@@ -262,10 +253,10 @@ def deleteMany(ids):
             # 產生 SQL IN 條件
             format_strings = ','.join(['%s'] * len(ids))
             delete_query = f"DELETE FROM {tableName} WHERE id IN ({format_strings});"
+            logger.info(f"{delete_query} {ids}")
             cursor.execute(delete_query, tuple(ids))
             conn.commit()
-            logger.info(delete_query, ids)
-            return {"is_success": True, "result": ids}
+            return {"is_success": True, "result": {"data": ids}}
     except Exception as e:
         logger.exception("Exception")
         return {"is_success": False, "result": f"連線失敗: {e}"}

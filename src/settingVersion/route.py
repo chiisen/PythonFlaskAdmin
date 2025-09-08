@@ -93,18 +93,7 @@ def get():
     id = request.json.get("id") if request.json else None  # 取得 id 參數
 
     response = query.get(id)
-    is_success = response["is_success"]
-    result = response["result"]
-    if(is_success == True):
-        json_format_result = {"data": result}
-        json_result = jsonify(json_format_result)
-        logger.info(f"[{filename}][{request.path}][{request.method}] App: {app_name}, 成功: {result}")
-        return json_result
-    else:
-        json_format_result = {"data": [], "error": result}
-        json_result = jsonify(json_format_result)
-        logger.error(f"[{filename}][{request.path}][{request.method}] App: {app_name}, 失敗: {result}")
-        return json_result
+    return check_result(response, app_name)
     
 @bp_settingVersion.route(f"/{routeName}/create", methods=["POST"])
 def create():
@@ -120,18 +109,7 @@ def create():
     version = request.json.get("version") if request.json else None  # 取得 version 參數
 
     response = query.create(data_type, version)
-    is_success = response["is_success"]
-    result = response["result"]
-    if(is_success == True):
-        json_format_result = {"data": result}
-        json_result = jsonify(json_format_result)
-        logger.info(f"[{filename}][{request.path}][{request.method}] App: {app_name}, 成功: {result}")
-        return json_result
-    else:
-        json_format_result = {"data": [], "error": result}
-        json_result = jsonify(json_format_result)
-        logger.error(f"[{filename}][{request.path}][{request.method}] App: {app_name}, 失敗: {result}")
-        return json_result
+    return check_result(response, app_name)
     
 @bp_settingVersion.route(f"/{routeName}/update", methods=["POST"])
 def update():
@@ -150,18 +128,7 @@ def update():
     updated_at = data.get("updated_at") if data and "updated_at" in data else None  # 取得 updated_at 參數
 
     response = query.update(id, version, updated_at)
-    is_success = response["is_success"]
-    result = response["result"]
-    if(is_success == True):
-        json_format_result = {"data": result}
-        json_result = jsonify(json_format_result)
-        logger.info(f"[{filename}][{request.path}][{request.method}] App: {app_name}, 成功: {result}")
-        return json_result
-    else:
-        json_format_result = {"data": [], "error": result}
-        json_result = jsonify(json_format_result)
-        logger.error(f"[{filename}][{request.path}][{request.method}] App: {app_name}, 失敗: {result}")
-        return json_result
+    return check_result(response, app_name)
 
 @bp_settingVersion.route(f"/{routeName}/delete", methods=["POST"])
 def delete():
@@ -176,18 +143,7 @@ def delete():
     id = request.json.get("id") if request.json else None  # 取得 id 參數
 
     response = query.delete(id)
-    is_success = response["is_success"]
-    result = response["result"]
-    if(is_success == True):
-        json_format_result = {"data": result}
-        json_result = jsonify(json_format_result)
-        logger.info(f"[{filename}][{request.path}][{request.method}] App: {app_name}, 成功: {result}")
-        return json_result
-    else:
-        json_format_result = {"data": [], "error": result}
-        json_result = jsonify(json_format_result)
-        logger.error(f"[{filename}][{request.path}][{request.method}] App: {app_name}, 失敗: {result}")
-        return json_result
+    return check_result(response, app_name)
     
 @bp_settingVersion.route(f"/{routeName}/deleteMany", methods=["POST"])
 def deleteMany():
@@ -202,15 +158,4 @@ def deleteMany():
     ids = request.json.get("ids") if request.json else None  # 取得 ids 參數
 
     response = query.deleteMany(ids)
-    is_success = response["is_success"]
-    result = response["result"]
-    if(is_success == True):
-        json_format_result = {"data": result}
-        json_result = jsonify(json_format_result)
-        logger.info(f"[{filename}][{request.path}][{request.method}] App: {app_name}, 成功: {result}")
-        return json_result
-    else:
-        json_format_result = {"data": [], "error": result}
-        json_result = jsonify(json_format_result)
-        logger.error(f"[{filename}][{request.path}][{request.method}] App: {app_name}, 失敗: {result}")
-        return json_result
+    return check_result(response, app_name)
