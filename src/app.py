@@ -5,18 +5,47 @@ import os
 import logging
 from datetime import datetime
 
+import json
+class PrettyColorFormatter(logging.Formatter):
+    RED = "\033[31m"
+    YELLOW = "\033[33m"
+    LIGHTBLUE = "\033[94m"
+    RESET = "\033[0m"
+    def format(self, record):
+        # 支援 dict/list 直接格式化
+        msg = record.msg
+        if isinstance(msg, (dict, list)):
+            record.msg = json.dumps(msg, ensure_ascii=False, indent=2)
+        else:
+            try:
+                obj = json.loads(msg)
+                record.msg = json.dumps(obj, ensure_ascii=False, indent=2)
+            except Exception:
+                pass
+        message = super().format(record)
+        # 加顏色
+        if record.levelno >= logging.ERROR:
+            return f"{self.RED}{message}{self.RESET}"
+        elif record.levelno == logging.WARNING:
+            return f"{self.YELLOW}{message}{self.RESET}"
+        elif record.levelno == logging.DEBUG:
+            return f"{self.LIGHTBLUE}{message}{self.RESET}"
+        return message
+
 # 建立 log 目錄（如果不存在）
 log_dir = "log"
 os.makedirs(log_dir, exist_ok=True)
 
 log_filename = os.path.join(log_dir, f"flask_app_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log")
+file_handler = logging.FileHandler(log_filename, encoding="utf-8")
+file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
+
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(PrettyColorFormatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
+
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-    handlers=[
-        logging.FileHandler(log_filename, encoding="utf-8"),
-        logging.StreamHandler()
-    ]
+    level=logging.DEBUG,
+    handlers=[file_handler, stream_handler]
 )
 logger = logging.getLogger("flask.app")
 logger.info("Flask app logger initialized")

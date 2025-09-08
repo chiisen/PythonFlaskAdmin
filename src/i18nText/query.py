@@ -1,6 +1,6 @@
 from utils import mysql
 import pymysql
-from common import timestamp
+import datetime
 # from 主目錄.子目錄 import 檔名(py檔)
 
 import logging
@@ -11,7 +11,7 @@ logger = logging.getLogger("flask.app")
 tableName = 'i18n_text'
 
 # key 是 MySQL 保留字，要加上反引號
-selectField = f"`key`, lang, text, updated_at, created_at"
+selectField = f"`id`,`key`, lang, text, updated_at, created_at"
 insertField = f"`key`, lang, text, updated_at, created_at"
 insertValues = f"%s, %s, %s, NOW(), NOW()"
 
@@ -34,14 +34,12 @@ def format_result(row):
     if not row:
         return None
     return {
-        "id": f"{row['key']}-{row['lang']}", # 前端 React Admin 需要 id 欄位來顯示序號
+        "id": row["id"],
         "key": row["key"],
         "lang": row["lang"],
         "text": row["text"],
         "updated_at": str(row["updated_at"]),
-        "updated_at_timestamp": timestamp.datetime_str_to_timestamp(str(row["updated_at"])),
         "created_at": str(row["created_at"]),
-        "created_at_timestamp": timestamp.datetime_str_to_timestamp(str(row["created_at"])),
     }
 
 def list(sort, pagination):
@@ -69,12 +67,13 @@ def list(sort, pagination):
                 query = f"SELECT {selectField} FROM {tableName} ORDER BY {sort_field} {sort['order']} LIMIT %s OFFSET %s;"
                 query_args = (per_page, offset)
 
-            cursor.execute(query, query_args)
             logger.info(query)
+            cursor.execute(query, query_args)
 
             rows = cursor.fetchall()
             # 查詢總筆數
             count_query = f"SELECT COUNT(*) as total FROM {tableName};"
+            logger.info(count_query)
             cursor.execute(count_query)
             count_row = cursor.fetchone()
             total = count_row["total"] if count_row else 0
@@ -83,9 +82,9 @@ def list(sort, pagination):
                 array = [format_result(row) for row in rows]
                 return {"is_success": True, "result": {"data": array, "total": total}}
             else:
-                return {"is_success": False, "result": "無法獲取設定"}
+                return {"is_success": False, "result": {"data": [], "total": 0, "error": "無法獲取設定"}}
     except Exception as e:
-        return {"is_success": False, "result": f"連線失敗: {e}"}
+        return {"is_success": False, "error": f"連線失敗: {e}"}
     finally:
         if conn:
             try:
@@ -93,35 +92,30 @@ def list(sort, pagination):
             except:
                 pass
 
-def get(key, lang):
+def get(id):
     """取得設定版本
 
     Returns:
         _type_: { "is_success": 是否執行成功 True / False, "result": 設定版本 }
     """
 
-    if not key:
-        raise ValueError("key 參數必填")
-    if not lang:
-        raise ValueError("lang 參數必填")
+    if not id:
+        raise ValueError("id 參數必填")
     conn = None
     try:
         conn = mysql.get_mysql_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
-            query = f"SELECT {selectField} FROM {tableName} WHERE `key` = %s AND lang = %s;"
-            cursor.execute(query, (key, lang))
-            logger.info(query, key, lang)
+            query = f"SELECT {selectField} FROM {tableName} WHERE `id` = %s;"
+            logger.info(query, id)
+            cursor.execute(query, (id,))
 
             row = cursor.fetchone()
             if row:
-                return {
-                    "is_success": True,
-                    "result": format_result(row)
-                }
+                return {"is_success": True, "result": {"data": format_result(row)}}
             else:
-                return {"is_success": False, "result": "無法獲取設定"}
+                return {"is_success": False, "result": {"data": [], "total": 0, "error": "無法獲取設定"}}
     except Exception as e:
-        return {"is_success": False, "result": f"連線失敗: {e}"}
+        return {"is_success": False, "error": f"連線失敗: {e}"}
     finally:
         if conn:
             try:
@@ -149,23 +143,20 @@ def create(key, lang, text):
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             # 新增一筆資料
             insert_query = f"INSERT INTO {tableName} ({insertField}) VALUES ({insertValues});"
-            cursor.execute(insert_query, (key, lang, text))
-            conn.commit()
             logger.info(insert_query, key, lang, text)
+            cursor.execute(insert_query, (key, lang, text))
+            conn.commit()            
 
             select_query = f"SELECT {selectField} FROM {tableName} WHERE `key` = %s;"
-            cursor.execute(select_query, (key,))
             logger.info(select_query, key)
+            cursor.execute(select_query, (key,))
             row = cursor.fetchone()
             if row:
-                return {
-                    "is_success": True,
-                    "result": format_result(row)
-                }
+                return {"is_success": True, "result": {"data": format_result(row)}}
             else:
-                return {"is_success": False, "result": "無法獲取新增後的設定版本"}
+                return {"is_success": False, "result": {"data": [], "total": 0, "error": "無法獲取新增後的設定"}}
     except Exception as e:
-        return {"is_success": False, "result": f"連線失敗: {e}"}
+        return {"is_success": False, "error": f"連線失敗: {e}"}
     finally:
         if conn:
             try:
@@ -173,40 +164,37 @@ def create(key, lang, text):
             except:
                 pass
 
-def update(key, lang, text, updated_at):
+def update(id, text):
     """更新設定版本
 
     Returns:
         _type_: { "is_success": 是否執行成功 True / False, "result": 設定版本 }
     """
 
-    if not key:
-        raise ValueError("key 參數必填")
-    if not lang:
-        raise ValueError("lang 參數必填")
+    if not id:
+        raise ValueError("id 參數必填")
     conn = None
     try:
         conn = mysql.get_mysql_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
-            update_query = f"UPDATE {tableName} SET text = %s, updated_at = %s WHERE `key` = %s AND lang = %s;"
-            cursor.execute(update_query, (text, updated_at, key, lang))
-            logger.info(update_query, text, updated_at, key, lang)
+            update_query = f"UPDATE {tableName} SET text = %s, updated_at = %s WHERE `id` = %s;"
+            # updated_at 一律更新為目前時間
+            updated_at = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            logger.info(update_query, text, updated_at, id)
+            cursor.execute(update_query, (text, updated_at, id))
             conn.commit()
 
             # 取得更新後的資料
-            select_query = f"SELECT {selectField} FROM {tableName} WHERE `key` = %s AND lang = %s;"
-            cursor.execute(select_query, (key, lang))
-            logger.info(select_query, key, lang)
+            select_query = f"SELECT {selectField} FROM {tableName} WHERE `id` = %s;"
+            logger.info(select_query, id)
+            cursor.execute(select_query, (id,))
             row = cursor.fetchone()
             if row:
-                return {
-                    "is_success": True,
-                    "result": format_result(row)
-                }
+                return {"is_success": True, "result": {"data": format_result(row)}}
             else:
-                return {"is_success": False, "result": "無法獲取更新後的設定版本"}
+                return {"is_success": False, "result": {"data": [], "total": 0, "error": "無法獲取更新後的設定"}}
     except Exception as e:
-        return {"is_success": False, "result": f"連線失敗: {e}"}
+        return {"is_success": False, "error": f"連線失敗: {e}"}
     finally:
         if conn:
             try:
@@ -214,28 +202,26 @@ def update(key, lang, text, updated_at):
             except:
                 pass
 
-def delete(key, lang):
+def delete(id):
     """刪除設定版本
 
     Returns:
         _type_: { "is_success": 是否執行成功 True / False, "result": 設定版本 }
     """
 
-    if not key:
-        raise ValueError("key 參數必填")
-    if not lang:
-        raise ValueError("lang 參數必填")
+    if not id:
+        raise ValueError("id 參數必填")
     conn = None
     try:
         conn = mysql.get_mysql_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
-            delete_query = f"DELETE FROM {tableName} WHERE `key` = %s AND lang = %s;"
-            cursor.execute(delete_query, (key, lang))
+            delete_query = f"DELETE FROM {tableName} WHERE `id` = %s;"
+            logger.info(delete_query, id)
+            cursor.execute(delete_query, (id,))
             conn.commit()
-            logger.info(delete_query, key, lang)
-            return {"is_success": True, "result": {"id": f"{key}-{lang}", "key": key, "lang": lang}}
+            return {"is_success": True, "result": {"data": {"id": id}}}
     except Exception as e:
-        return {"is_success": False, "result": f"連線失敗: {e}"}
+        return {"is_success": False, "error": f"連線失敗: {e}"}
     finally:
         if conn:
             try:
@@ -263,15 +249,14 @@ def deleteMany(ids):
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             # 這邊需要 for loop 一筆一筆刪除
             for id in ids:
-                key, lang = id.split('-', 1)
-                delete_query = f"DELETE FROM {tableName} WHERE `key` = %s AND lang = %s;"
-                cursor.execute(delete_query, (key, lang))
-                logger.info(f"{delete_query} {key}, {lang}")
+                delete_query = f"DELETE FROM {tableName} WHERE `id` = %s;"
+                logger.info(f"{delete_query} {id}")
+                cursor.execute(delete_query, (id,))
             conn.commit()
 
-            return {"is_success": True, "result": ids}
+            return {"is_success": True, "result": {"data": ids}}
     except Exception as e:
-        return {"is_success": False, "result": f"連線失敗: {e}"}
+        return {"is_success": False, "error": f"連線失敗: {e}"}
     finally:
         if conn:
             try:
