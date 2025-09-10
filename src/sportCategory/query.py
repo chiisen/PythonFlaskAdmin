@@ -201,7 +201,8 @@ def delete(item_id, option_id):
             logger.info(update_query, version_setting_data_type)
             cursor.execute(update_query, (version_setting_data_type,))
             conn.commit()
-            return {"is_success": True, "result": {"id": f"{item_id}-{option_id}"}}
+            
+            return {"is_success": True, "result": {"data": {"id": f"{item_id}-{option_id}"}}}
     except Exception as e:
         logger.exception("Exception")
         return {"is_success": False, "result": f"連線失敗: {e}"}
@@ -248,7 +249,8 @@ def deleteMany(ids):
             logger.info(update_query, version_setting_data_type)
             cursor.execute(update_query, (version_setting_data_type,))
             conn.commit()
-            return {"is_success": True, "result": ids}
+
+            return {"is_success": True, "result": {"data": ids}}
     except Exception as e:
         logger.exception("Exception")
         return {"is_success": False, "result": f"連線失敗: {e}"}
