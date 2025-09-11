@@ -45,12 +45,7 @@ def get():
     app_name = request.headers.get('appName')
 
     id = request.json.get("id") if request.json else None  # 取得 id 參數
-    # id 為 item_id-option_id 組合而成，需要拆解
-    if id and '-' in id:
-        item_id, option_id = id.split('-', 1)
-    else:
-        item_id, option_id = None, None
-    response = query.get(item_id, option_id)
+    response = query.get(id)
     return check_result.check_result(logger, filename, request.path, request.method, response, app_name)
 
 @bp_sportCategory.route(f"/{routeName}/create", methods=["POST"])
@@ -81,12 +76,7 @@ def delete():
 
     id = request.json.get("id") if request.json else None  # 取得 id 參數
 
-    # id 為 item_id-option_id 組合而成，需要拆解
-    if id and '-' in id:
-        item_id, option_id = id.split('-', 1)
-    else:
-        item_id, option_id = None, None
-    response = query.delete(item_id, option_id)
+    response = query.delete(id)
     return check_result.check_result(logger, filename, request.path, request.method, response, app_name)
     
 @bp_sportCategory.route(f"/{routeName}/deleteMany", methods=["POST"])

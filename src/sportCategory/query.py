@@ -11,7 +11,7 @@ logger = logging.getLogger("flask.app")
 tableName = 'sport_category'
 
 
-selectField = f"item_id, option_id, updated_at, created_at"
+selectField = f"id, item_id, option_id, updated_at, created_at"
 insertField = f"item_id, option_id, updated_at, created_at"
 insertValues = f"%s, %s, NOW(), NOW()"
 
@@ -21,12 +21,11 @@ version_setting_data_type = 'getSportItemCategories'
 
 def get_sort_field(sort_field):
     """處理排序欄位，
-    將 id 轉為 item_id，因為 id 為 item_id-option_id 組合而成，需要拆解
-    如果 sort['field'] 是 "id"，就會變成： ORDER BY item_id, option_id
+    id 不做轉換
     """
     
     if sort_field == "id":
-        return "item_id, option_id"
+        return "id"
     return sort_field
 
 def format_result(row):
@@ -39,7 +38,7 @@ def format_result(row):
     if not row:
         return None
     return {
-        "id": f"{row['item_id']}-{row['option_id']}", # 前端 React Admin 需要 id 欄位來顯示序號
+        "id": row["id"], # 前端 React Admin 需要 id 欄位來顯示序號
         "item_id": row["item_id"],
         "option_id": row["option_id"],
         "updated_at": str(row["updated_at"]),
@@ -98,24 +97,22 @@ def list(sort, pagination):
             except:
                 pass
 
-def get(item_id, option_id):
+def get(id):
     """取得設定版本
 
     Returns:
         _type_: { "is_success": 是否執行成功 True / False, "result": 設定版本 }
     """
 
-    if not item_id:
-        raise ValueError("item_id 參數必填")
-    if not option_id:
-        raise ValueError("option_id 參數必填")
+    if not id:
+        raise ValueError("id 參數必填")
     conn = None
     try:
         conn = mysql.get_mysql_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
-            query = f"SELECT {selectField} FROM {tableName} WHERE item_id = %s AND option_id = %s;"
-            logger.info(query, item_id, option_id)
-            cursor.execute(query, (item_id, option_id))
+            query = f"SELECT {selectField} FROM {tableName} WHERE id = %s;"
+            logger.info(query, id)
+            cursor.execute(query, (id,))
 
             row = cursor.fetchone()
             if row:
@@ -176,24 +173,22 @@ def create(item_id, option_id):
             except:
                 pass
 
-def delete(item_id, option_id):
+def delete(id):
     """刪除設定版本
 
     Returns:
         _type_: { "is_success": 是否執行成功 True / False, "result": 設定版本 }
     """
 
-    if not item_id:
-        raise ValueError("item_id 參數必填")
-    if not option_id:
-        raise ValueError("option_id 參數必填")
+    if not id:
+        raise ValueError("id 參數必填")
     conn = None
     try:
         conn = mysql.get_mysql_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
-            delete_query = f"DELETE FROM {tableName} WHERE item_id = %s AND option_id = %s;"
-            logger.info(delete_query, item_id, option_id)
-            cursor.execute(delete_query, (item_id, option_id))
+            delete_query = f"DELETE FROM {tableName} WHERE id = %s;"
+            logger.info(delete_query, id)
+            cursor.execute(delete_query, (id,))
             conn.commit()
 
             # 這邊還要更新 setting_versions 的 updated_at 時間
@@ -201,8 +196,7 @@ def delete(item_id, option_id):
             logger.info(update_query, version_setting_data_type)
             cursor.execute(update_query, (version_setting_data_type,))
             conn.commit()
-            
-            return {"is_success": True, "result": {"data": {"id": f"{item_id}-{option_id}"}}}
+            return {"is_success": True, "result": {"data": {"id": f"{id}"}}}
     except Exception as e:
         logger.exception("Exception")
         return {"is_success": False, "result": f"連線失敗: {e}"}
@@ -238,10 +232,9 @@ def deleteMany(ids):
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             # 這邊需要 for loop 一筆一筆刪除
             for id in ids:
-                item_id, option_id = id.split('-', 1)
-                delete_query = f"DELETE FROM {tableName} WHERE item_id = %s AND option_id = %s;"
-                logger.info(f"{delete_query} {item_id}, {option_id}")
-                cursor.execute(delete_query, (item_id, option_id))                
+                delete_query = f"DELETE FROM {tableName} WHERE `id` = %s;"
+                logger.info(f"{delete_query} {id}")
+                cursor.execute(delete_query, (id,))
             conn.commit()
             
             # 這邊還要更新 setting_versions 的 updated_at 時間
