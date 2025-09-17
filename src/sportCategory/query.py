@@ -11,9 +11,9 @@ logger = logging.getLogger("flask.app")
 tableName = 'sport_category'
 
 
-selectField = f"id, item_id, option_id, updated_at, created_at"
-insertField = f"item_id, option_id, updated_at, created_at"
-insertValues = f"%s, %s, NOW(), NOW()"
+selectField = f"id, item_id, option_id, sort_order, updated_at, created_at"
+insertField = f"item_id, option_id, sort_order, updated_at, created_at"
+insertValues = f"%s, %s, %s, NOW(), NOW()"
 
 
 version_setting_data_type = 'getSportItemCategories'
@@ -41,6 +41,7 @@ def format_result(row):
         "id": row["id"], # 前端 React Admin 需要 id 欄位來顯示序號
         "item_id": row["item_id"],
         "option_id": row["option_id"],
+        "sort_order": row["sort_order"],
         "updated_at": str(row["updated_at"]),
         "updated_at_timestamp": timestamp.datetime_str_to_timestamp(str(row["updated_at"])),
         "created_at": str(row["created_at"]),
@@ -129,7 +130,7 @@ def get(id):
             except:
                 pass
 
-def create(item_id, option_id):
+def create(item_id, option_id, sort_order):
     """建立設定版本
 
     Returns:
@@ -163,6 +164,48 @@ def create(item_id, option_id):
                 return {"is_success": True, "result": {"data": format_result(row)}}
             else:
                 return {"is_success": False, "result": "無法獲取新增後的設定版本"}
+    except Exception as e:
+        logger.exception("Exception")
+        return {"is_success": False, "result": f"連線失敗: {e}"}
+    finally:
+        if conn:
+            try:
+                conn.close()
+            except:
+                pass
+
+def update(id, item_id, option_id, sort_order):
+    """更新設定版本
+
+    Returns:
+        _type_: { "is_success": 是否執行成功 True / False, "result": 設定版本 }
+    """
+
+    if not id:
+        raise ValueError("id 參數必填")
+    conn = None
+    try:
+        conn = mysql.get_mysql_connection()
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            update_query = f"UPDATE {tableName} SET item_id = %s, option_id = %s, sort_order = %s, updated_at = NOW() WHERE id = %s;"
+            logger.info(update_query, item_id, option_id, sort_order, id)
+            cursor.execute(update_query, (item_id, option_id, sort_order, id))
+            conn.commit()
+
+            # 取得更新後的資料
+            select_query = f"SELECT {selectField} FROM {tableName} WHERE id = %s;"
+            logger.info(select_query, id)
+            cursor.execute(select_query, (id,))
+            row = cursor.fetchone()
+            if row:
+                # 這邊還要更新 setting_versions 的 updated_at 時間
+                update_query = f"UPDATE setting_versions SET updated_at = NOW() WHERE data_type = %s;"
+                logger.info(update_query, version_setting_data_type)
+                cursor.execute(update_query, (version_setting_data_type,))
+                conn.commit()
+                return {"is_success": True, "result": {"data": format_result(row)}}
+            else:
+                return {"is_success": False, "result": "無法獲取更新後的設定"}
     except Exception as e:
         logger.exception("Exception")
         return {"is_success": False, "result": f"連線失敗: {e}"}
