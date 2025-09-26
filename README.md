@@ -69,3 +69,8 @@ $env:FLASK_APP="src/app.py"
 python -m flask run
 ```
 
+## GitLab
+```bash
+git push gitlab main
+```
+
