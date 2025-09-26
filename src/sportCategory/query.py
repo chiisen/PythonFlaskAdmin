@@ -141,14 +141,16 @@ def create(item_id, option_id, sort_order):
         raise ValueError("item_id 參數必填")
     if not option_id:
         raise ValueError("option_id 參數必填")
+    if not sort_order:
+        sort_order = 0
     conn = None
     try:
         conn = mysql.get_mysql_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             # 新增一筆資料
             insert_query = f"INSERT INTO {tableName} ({insertField}) VALUES ({insertValues});"
-            logger.info(insert_query, item_id, option_id)
-            cursor.execute(insert_query, (item_id, option_id))
+            logger.info(insert_query, item_id, option_id, sort_order)
+            cursor.execute(insert_query, (item_id, option_id, sort_order))
             conn.commit()
 
             select_query = f"SELECT {selectField} FROM {tableName} WHERE item_id = %s AND option_id = %s;"
