@@ -74,3 +74,8 @@ python -m flask run
 git push gitlab main
 ```
 
+## Docker
+```bash
+docker-compose up --build
+```
+
