@@ -83,9 +83,8 @@ def update():
     name_key = data.get("name_key") if data and "name_key" in data else None  # 取得 name_key 參數
     description = data.get("description") if data and "description" in data else None  # 取得 description 參數
     sort_order = data.get("sort_order") if data and "sort_order" in data else None  # 取得 sort_order 參數
-    updated_at = data.get("updated_at") if data and "updated_at" in data else None  # 取得 updated_at 參數
 
-    response = query.update(id, name_key, description, sort_order, updated_at)
+    response = query.update(id, name_key, description, sort_order)
     return check_result.check_result(logger, filename, request.path, request.method, response, app_name)
 
 @bp_categoryOption.route(f"/{routeName}/delete", methods=["POST"])

@@ -179,7 +179,7 @@ def create(group_id, name_key, description, sort_order):
             except:
                 pass
 
-def update(id, name_key, description, sort_order, updated_at):
+def update(id, name_key, description, sort_order):
     """更新設定版本
 
     Returns:
@@ -192,9 +192,9 @@ def update(id, name_key, description, sort_order, updated_at):
     try:
         conn = mysql.get_mysql_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
-            update_query = f"UPDATE {tableName} SET name_key = %s, description = %s, sort_order = %s, updated_at = %s WHERE id = %s;"
-            logger.info(update_query, name_key, description, sort_order, updated_at, id)
-            cursor.execute(update_query, (name_key, description, sort_order, updated_at, id))
+            update_query = f"UPDATE {tableName} SET name_key = %s, description = %s, sort_order = %s, updated_at = NOW() WHERE id = %s;"
+            logger.info(update_query, name_key, description, sort_order, id)
+            cursor.execute(update_query, (name_key, description, sort_order, id))
             conn.commit()
 
             # 取得更新後的資料
