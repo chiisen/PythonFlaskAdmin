@@ -100,7 +100,8 @@ def delete():
 
     id = request.json.get("id") if request.json else None  # 取得 id 參數
 
-    response = query.delete(id)
+    #response = query.delete(id)
+    response = {"error": "Delete function is disabled"}
     return check_result.check_result(logger, filename, request.path, request.method, response, app_name)
 
 @bp_categoryGroup.route(f"/{routeName}/deleteMany", methods=["POST"])
@@ -115,5 +116,6 @@ def deleteMany():
 
     ids = request.json.get("ids") if request.json else None  # 取得 ids 參數
 
-    response = query.deleteMany(ids)
+    #response = query.deleteMany(ids)
+    response = {"error": "DeleteMany function is disabled"}
     return check_result.check_result(logger, filename, request.path, request.method, response, app_name)
