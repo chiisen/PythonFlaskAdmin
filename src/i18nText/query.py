@@ -42,7 +42,7 @@ def format_result(row):
         "created_at": str(row["created_at"]),
     }
 
-def list(sort, pagination):
+def list(sort, pagination, lang):
     """取得設定版本
 
     Returns:
@@ -60,13 +60,21 @@ def list(sort, pagination):
 
             # 如果 sort 有值，則根據 sort 參數決定排序方式
             if not sort:
-                query = f"SELECT {selectField} FROM {tableName} ORDER BY updated_at DESC LIMIT %s OFFSET %s;"
-                query_args = (per_page, offset)
+                if not lang:
+                    query = f"SELECT {selectField} FROM {tableName} ORDER BY updated_at DESC LIMIT %s OFFSET %s;"
+                    query_args = (per_page, offset)
+                else:
+                    query = f"SELECT {selectField} FROM {tableName} WHERE lang = %s ORDER BY updated_at DESC LIMIT %s OFFSET %s;"
+                    query_args = (lang, per_page, offset)
             else:
                 sort_field = get_sort_field(sort['field'])
                 order_field = sort['order']
-                query = f"SELECT {selectField} FROM {tableName} ORDER BY {sort_field} {order_field} LIMIT %s OFFSET %s;"
-                query_args = (per_page, offset)
+                if not lang:
+                    query = f"SELECT {selectField} FROM {tableName} ORDER BY {sort_field} {order_field} LIMIT %s OFFSET %s;"
+                    query_args = (per_page, offset)
+                else:
+                    query = f"SELECT {selectField} FROM {tableName} WHERE lang = %s ORDER BY {sort_field} {order_field} LIMIT %s OFFSET %s;"
+                    query_args = (lang, per_page, offset)
 
             logger.info(query)
             cursor.execute(query, query_args)

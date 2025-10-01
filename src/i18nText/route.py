@@ -50,8 +50,10 @@ def list():
 
     sort = request.json.get("sort") if request.json else None  # 取得 sort 參數
     pagination = request.json.get("pagination") if request.json else None  # 取得 pagination 參數
+    filter = request.json.get("filter") if request.json else None  # 取得 sort 參數
+    lang = filter.get("lang") if filter and "lang" in filter else None  # 取得 lang 參數
 
-    response = query.list(sort, pagination)
+    response = query.list(sort, pagination, lang)
     return check_result.check_result(logger, filename, request.path, request.method, response, app_name)
 
 @bp_i18nText.route(f"/{routeName}/get", methods=["POST"])
