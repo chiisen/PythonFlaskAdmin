@@ -20,7 +20,7 @@ def get_sort_field(sort_field):
     將 id 轉為 key，因為 id 為 key 更名，因為前端只讀 id
     """
     
-    if sort_field == "id":
+    if sort_field == "id" or sort_field == "key":
         return "`key`" # key 是 MySQL 保留字，要加上反引號
     return sort_field
 
@@ -64,7 +64,8 @@ def list(sort, pagination):
                 query_args = (per_page, offset)
             else:
                 sort_field = get_sort_field(sort['field'])
-                query = f"SELECT {selectField} FROM {tableName} ORDER BY {sort_field} {sort['order']} LIMIT %s OFFSET %s;"
+                order_field = sort['order']
+                query = f"SELECT {selectField} FROM {tableName} ORDER BY {sort_field} {order_field} LIMIT %s OFFSET %s;"
                 query_args = (per_page, offset)
 
             logger.info(query)
