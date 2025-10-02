@@ -192,9 +192,9 @@ def update(id, name_key, description, link_type, link_sub_type, updated_at):
     try:
         conn = mysql.get_mysql_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
-            update_query = f"UPDATE {tableName} SET name_key = %s, description = %s, link_type = %s, link_sub_type = %s, updated_at = %s WHERE id = %s;"
-            logger.info(update_query, name_key, description, link_type, link_sub_type, updated_at, id)
-            cursor.execute(update_query, (name_key, description, link_type, link_sub_type, updated_at, id))
+            update_query = f"UPDATE {tableName} SET name_key = %s, description = %s, link_type = %s, link_sub_type = %s, updated_at = NOW() WHERE id = %s;"
+            logger.info(update_query, name_key, description, link_type, link_sub_type, id)
+            cursor.execute(update_query, (name_key, description, link_type, link_sub_type, id))
             conn.commit()
 
             # 取得更新後的資料
