@@ -80,11 +80,29 @@ def update():
     previousData = request.json.get("previousData") if request.json else None  # 取得 previousData 參數
 
     item_id = previousData.get("item_id") if previousData and "item_id" in previousData else None  # 取得 item_id 參數
-    option_id = previousData.get("option_id") if previousData and "option_id" in previousData else None  # 取得 option_id 參數
+    option_id = data.get("option_id") if data and "option_id" in data else None  # 取得 option_id 參數
 
     sort_order = data.get("sort_order") if data and "sort_order" in data else None  # 取得 sort_order 參數
 
     response = query.update(id, item_id, option_id, sort_order)
+    return check_result.check_result(logger, filename, request.path, request.method, response, app_name)
+
+@bp_sportCategory.route(f"/{routeName}/updateMany", methods=["POST"])
+def updateMany():
+    """更新多筆設定版本
+
+    Returns:
+        _type_: 回傳版本資訊
+    """
+
+    app_name = request.headers.get('appName')
+
+    ids = request.json.get("ids") if request.json else None  # 取得 ids 參數
+    data = request.json.get("data") if request.json else None  # 取得 data 參數
+
+    sort_order = data.get("sort_order") if data and "sort_order" in data else None  # 取得 sort_order 參數
+
+    response = query.updateMany(ids, sort_order)
     return check_result.check_result(logger, filename, request.path, request.method, response, app_name)
 
 @bp_sportCategory.route(f"/{routeName}/delete", methods=["POST"])
