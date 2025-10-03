@@ -195,7 +195,8 @@ def updateMany(ids):
             # 這邊需要 for loop 一筆一筆更新
             for id in ids:
                 update_query = f"UPDATE {tableName} SET sort_order = %s, item_id = %s, option_id = %s, updated_at = NOW() WHERE id = %s;"
-                logger.info(f"{update_query} {id['excel_sort_order']} {id['excel_item_id']} {id['excel_option_id']} {id['api_id']}")
+                msg = update_query % (id['excel_sort_order'], id['excel_item_id'], id['excel_option_id'], id['api_id'])
+                logger.debug(msg)
                 cursor.execute(update_query, (id['excel_sort_order'], id['excel_item_id'], id['excel_option_id'], id['api_id']))
             conn.commit()
             
