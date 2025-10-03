@@ -98,11 +98,8 @@ def updateMany():
     app_name = request.headers.get('appName')
 
     ids = request.json.get("ids") if request.json else None  # 取得 ids 參數
-    data = request.json.get("data") if request.json else None  # 取得 data 參數
 
-    sort_order = data.get("sort_order") if data and "sort_order" in data else None  # 取得 sort_order 參數
-
-    response = query.updateMany(ids, sort_order)
+    response = query.updateMany(ids)
     return check_result.check_result(logger, filename, request.path, request.method, response, app_name)
 
 @bp_sportCategory.route(f"/{routeName}/delete", methods=["POST"])

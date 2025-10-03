@@ -176,44 +176,27 @@ def create(item_id, option_id, sort_order):
             except:
                 pass
 
-def updateMany(ids, sort_order):
+def updateMany(ids):
     """更新多筆設定版本
 
     Returns:
         _type_: { "is_success": 是否執行成功 True / False, "result": 設定版本 }
     """
 
-    # 支援傳入逗號分隔字串或單一值
-    if isinstance(ids, str):
-        ids = [i.strip() for i in ids.split(',') if i.strip()]
-    elif not isinstance(ids, Sequence):
+    if not isinstance(ids, Sequence):
         raise ValueError("ids 參數型態錯誤")
     if not ids:
         raise ValueError("ids 參數不可為空")
-    if not sort_order:
-        raise ValueError("sort_order 參數必填")
-    # ids 假設為 ['97-1', '97-2'] 其中的 '97-1' 為 item_id-option_id 組合而成，需要拆解
-    # 拆解後的結果為:
-    # item_ids = ['97']
-    # option_ids = ['1', '2']
-    item_ids = []
-    option_ids = []
-    for id in ids:
-        parts = id.split('-')
-        if len(parts) != 2:
-            raise ValueError(f"ids 參數格式錯誤: {id}")
-        item_ids.append(parts[0])
-        option_ids.append(parts[1])
 
     conn = None
     try:
         conn = mysql.get_mysql_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             # 這邊需要 for loop 一筆一筆更新
-            for item_id, option_id in zip(item_ids, option_ids):
-                update_query = f"UPDATE {tableName} SET sort_order = %s, updated_at = NOW() WHERE item_id = %s AND option_id = %s;"
-                logger.info(f"{update_query} {sort_order} {item_id} {option_id}")
-                cursor.execute(update_query, (sort_order, item_id, option_id))
+            for id in ids:
+                update_query = f"UPDATE {tableName} SET sort_order = %s, item_id = %s, option_id = %s, updated_at = NOW() WHERE id = %s;"
+                logger.info(f"{update_query} {id['excel_sort_order']} {id['excel_item_id']} {id['excel_option_id']} {id['api_id']}")
+                cursor.execute(update_query, (id['excel_sort_order'], id['excel_item_id'], id['excel_option_id'], id['api_id']))
             conn.commit()
             
             # 這邊還要更新 setting_versions 的 updated_at 時間
